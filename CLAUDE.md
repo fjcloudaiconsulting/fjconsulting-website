@@ -8,6 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   Do not add `Co-Authored-By` trailers to commits, and do not add "Generated with
   Claude Code" (or any similar authorship/attribution) lines to PR descriptions or
   comments. Commits and PRs are authored solely by the repository owner.
+- **Every change goes through a PR. Never merge a PR** — the repository owner
+  merges, and only after he explicitly says so. Do not merge, auto-merge, or push
+  directly to `main`. Open the PR and wait.
+- **Versioning: Semantic Versioning + Conventional Commits.** Commit messages and
+  PR titles follow [Conventional Commits](https://www.conventionalcommits.org)
+  (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, …); releases are tagged with
+  [SemVer](https://semver.org) (`vMAJOR.MINOR.PATCH`), where the commit types
+  determine the bump (`fix` → patch, `feat` → minor, `!`/`BREAKING CHANGE` → major).
 
 ## Project intention
 

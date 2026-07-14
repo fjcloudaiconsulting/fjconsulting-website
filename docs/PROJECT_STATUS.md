@@ -21,6 +21,16 @@ the end of each working session.
 2. Produce the **Phase 1 implementation plan** (writing-plans skill).
 3. Build the Astro single-page site → deploy to `*.pages.dev`.
 
+## Conventions
+
+- **Semantic Versioning** is adopted for commits, PRs, and releases.
+  - Commit messages and PR titles follow **Conventional Commits**
+    (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `ci:`, …).
+  - Releases are tagged **`vMAJOR.MINOR.PATCH`** ([SemVer](https://semver.org)):
+    `fix` → patch, `feat` → minor, `!` / `BREAKING CHANGE` → major.
+- **Every change goes through a PR.** The owner is the only one who merges, and
+  only after explicit approval. No direct pushes to `main`, no auto-merge.
+
 ## Key decisions (locked)
 
 | Topic          | Decision                                                             |
