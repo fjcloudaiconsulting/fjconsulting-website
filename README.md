@@ -62,8 +62,3 @@ npm run preview  # serve the production build locally
 
 - **Design spec:** [`docs/superpowers/specs/2026-07-14-fjconsulting-website-design.md`](docs/superpowers/specs/2026-07-14-fjconsulting-website-design.md)
 - **Project status / where we left off:** [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
-
-## Company
-
-FJ Cloud & AI Consulting · KvK 42010737 · BTW NL005431862B54
-Baak van Camperduin 42, 3826 GH Amersfoort, NL · info@fjconsulting.io
