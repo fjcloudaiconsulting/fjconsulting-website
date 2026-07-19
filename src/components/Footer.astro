@@ -1,0 +1,128 @@
+---
+import Logo from './Logo.astro';
+import { company } from '../data/site';
+
+const year = new Date().getFullYear();
+const { address } = company;
+---
+
+<footer class="footer">
+  <div class="shell footer__inner">
+    <div class="footer__brand">
+      <Logo />
+      <p class="footer__tag">
+        Cloud, Kubernetes and AI infrastructure consulting.
+      </p>
+    </div>
+
+    <!--
+      Dutch trade registration. A KvK number, VAT id and registered address are
+      what a company is legally expected to publish, and they are the fastest
+      way for a procurement or finance team to verify the business is real.
+    -->
+    <dl class="footer__details">
+      <div>
+        <dt class="mono">Registered</dt>
+        <dd>
+          <address>
+            {address.street}<br />
+            {address.postalCode}&nbsp;{address.city}<br />
+            {address.country}
+          </address>
+        </dd>
+      </div>
+      <div>
+        <dt class="mono">KvK</dt>
+        <dd>{company.kvk}</dd>
+      </div>
+      <div>
+        <dt class="mono">BTW-id</dt>
+        <dd>{company.vat}</dd>
+      </div>
+      <div>
+        <dt class="mono">Contact</dt>
+        <dd>
+          <a class="link" href={`mailto:${company.email}`}>{company.email}</a>
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="shell footer__base">
+    <p class="mono">&copy; {year} {company.name}</p>
+    <p class="mono footer__colophon">
+      Astro · Cloudflare Pages · Terraform
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    padding-top: var(--section-y-tight);
+  }
+
+  .footer__inner {
+    display: grid;
+    gap: var(--s-7);
+    padding-bottom: var(--s-7);
+  }
+
+  .footer__tag {
+    margin-top: var(--s-4);
+    color: var(--ink-muted);
+    font-size: var(--t-sm);
+    max-width: 30ch;
+  }
+
+  .footer__details {
+    display: grid;
+    gap: var(--s-5);
+    margin: 0;
+  }
+
+  .footer__details dt {
+    margin-bottom: 0.4rem;
+  }
+
+  .footer__details dd {
+    margin: 0;
+    font-size: var(--t-sm);
+    color: var(--ink-muted);
+  }
+
+  .footer__details address {
+    font-style: normal;
+    line-height: 1.7;
+  }
+
+  .footer__base {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3) var(--s-5);
+    justify-content: space-between;
+    padding-block: var(--s-5);
+    border-top: 1px solid var(--line);
+  }
+
+  /* The stack is named because for this business the build is part of the
+     pitch, not because a footer needs a colophon. */
+  .footer__colophon {
+    color: var(--ink-faint);
+  }
+
+  @media (min-width: 40rem) {
+    .footer__details {
+      grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+      gap: var(--s-6);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .footer__inner {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      gap: var(--s-8);
+    }
+  }
+</style>

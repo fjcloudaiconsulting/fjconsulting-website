@@ -1,0 +1,140 @@
+---
+import { hero } from '../data/site';
+---
+
+<section class="hero" id="top">
+  <!-- A hairline grid, radially faded. It reads as drafting paper rather than
+       decoration, and it is the only ornament on the page. -->
+  <div class="hero__grid" aria-hidden="true"></div>
+
+  <div class="shell hero__inner">
+    <p class="hero__status" data-reveal>
+      <span class="hero__dot" aria-hidden="true"></span>
+      {hero.status}
+    </p>
+
+    <h1 class="hero__headline" data-reveal style="--reveal-delay: 70ms">
+      Cloud, Kubernetes and AI infrastructure,
+      <span class="hero__accent">built as code.</span>
+    </h1>
+
+    <p class="lede hero__lede" data-reveal style="--reveal-delay: 140ms">
+      {hero.lede}
+    </p>
+
+    <div class="hero__actions" data-reveal style="--reveal-delay: 210ms">
+      <a class="btn btn--primary" href={hero.primaryCta.href}>
+        {hero.primaryCta.label}
+      </a>
+      <a class="btn btn--ghost" href={hero.secondaryCta.href}>
+        {hero.secondaryCta.label}
+      </a>
+    </div>
+
+    <p class="mono hero__location" data-reveal style="--reveal-delay: 280ms">
+      {hero.location}
+    </p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    /* Bottom padding stays small on purpose: the following section brings its
+       own --section-y, and both at full size stacked into a dead band. */
+    padding-block: clamp(3.5rem, 9vw, 7rem) clamp(1.5rem, 3vw, 3rem);
+    overflow: hidden;
+  }
+
+  .hero__grid {
+    position: absolute;
+    inset: -1px 0 auto 0;
+    height: min(46rem, 92%);
+    z-index: -1;
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 5.5rem 5.5rem;
+    /* Fade the grid out toward the edges and the bottom so it never reads as a
+       hard-edged rectangle sitting on top of the page. */
+    -webkit-mask-image: radial-gradient(
+      120% 85% at 18% 0%,
+      #000 0%,
+      rgb(0 0 0 / 0.55) 42%,
+      transparent 78%
+    );
+    mask-image: radial-gradient(
+      120% 85% at 18% 0%,
+      #000 0%,
+      rgb(0 0 0 / 0.55) 42%,
+      transparent 78%
+    );
+    opacity: 0.75;
+  }
+
+  .hero__inner {
+    display: grid;
+    justify-items: start;
+    gap: var(--s-5);
+  }
+
+  .hero__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.85rem 0.4rem 0.7rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    color: var(--ink-muted);
+    line-height: 1.2;
+  }
+
+  .hero__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--ok);
+    /* Availability is also stated in words, so colour is never the only
+       carrier of the meaning. */
+    flex-shrink: 0;
+  }
+
+  .hero__headline {
+    max-width: 19ch;
+    margin-top: var(--s-2);
+  }
+
+  /* Gold as emphasis on the phrase that carries the positioning. Solid colour,
+     never a gradient clipped to text. */
+  .hero__accent {
+    color: var(--gold);
+    display: block;
+  }
+
+  .hero__lede {
+    max-width: 54ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-3);
+  }
+
+  .hero__location {
+    margin-top: var(--s-4);
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-size: var(--t-mono);
+  }
+
+  @media (min-width: 48rem) {
+    .hero__headline {
+      max-width: 17ch;
+    }
+  }
+</style>

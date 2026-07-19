@@ -1,0 +1,151 @@
+---
+import Logo from './Logo.astro';
+import { nav } from '../data/site';
+---
+
+<!-- Sentinel: when this scrolls out of view the nav takes on its solid state.
+     Cheaper and smoother than listening to scroll events. -->
+<div id="nav-sentinel" aria-hidden="true"></div>
+
+<header class="nav" data-stuck="false">
+  <div class="shell nav__inner">
+    <a class="nav__brand" href="#top" aria-label="FJ Cloud &amp; AI Consulting, back to top">
+      <Logo />
+    </a>
+
+    <nav class="nav__links" aria-label="Sections">
+      <ul role="list">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a class="btn btn--primary nav__cta" href="#contact">Get in touch</a>
+  </div>
+</header>
+
+<script>
+  const sentinel = document.getElementById('nav-sentinel');
+  const header = document.querySelector<HTMLElement>('.nav');
+
+  if (sentinel && header && 'IntersectionObserver' in window) {
+    new IntersectionObserver(
+      ([entry]) => {
+        header.dataset.stuck = String(!entry.isIntersecting);
+      },
+      { threshold: 0 },
+    ).observe(sentinel);
+  }
+</script>
+
+<style>
+  #nav-sentinel {
+    position: absolute;
+    top: 0;
+    height: 1px;
+    width: 1px;
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+
+  /* Solid, not blurred. A glass nav would be decoration; an opaque one is
+     just legibility once content passes underneath. */
+  .nav[data-stuck='true'] {
+    background: var(--bg);
+    border-bottom-color: var(--line);
+  }
+
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+    min-height: 4.5rem;
+  }
+
+  .nav__brand {
+    text-decoration: none;
+    margin-right: auto;
+    border-radius: var(--r-sm);
+  }
+
+  .nav__links {
+    display: none;
+  }
+
+  .nav__links ul {
+    display: flex;
+    align-items: center;
+    gap: var(--s-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav__links a {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.5rem;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  /* A gold rule that draws in from the left, rather than a colour swap. The
+     accent stays scarce and does one job. */
+  .nav__links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0.15rem;
+    height: 1px;
+    width: 100%;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .nav__links a:hover {
+    color: var(--ink);
+  }
+
+  .nav__links a:hover::after {
+    transform: scaleX(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav__links a::after {
+      transition: none;
+    }
+  }
+
+  @media (min-width: 56rem) {
+    .nav__links {
+      display: block;
+    }
+  }
+
+  /* Below the breakpoint the anchor list is dropped rather than hidden behind
+     a hamburger: it is one page, scrolling works, and the only action that
+     matters stays visible. */
+  .nav__cta {
+    padding: 0.6rem 1rem;
+    min-height: 2.5rem;
+  }
+</style>

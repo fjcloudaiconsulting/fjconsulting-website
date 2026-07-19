@@ -1,0 +1,39 @@
+# Build output
+dist/
+.astro/
+
+# Dependencies
+node_modules/
+
+# Environment / secrets — never commit these
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Cloudflare / wrangler
+.wrangler/
+
+# Terraform. State lives in Terraform Cloud, never on disk here.
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.auto.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
