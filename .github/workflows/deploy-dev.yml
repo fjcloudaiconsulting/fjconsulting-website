@@ -1,0 +1,32 @@
+name: Deploy dev
+
+# Every merge to main lands on the dev environment automatically.
+# fjconsulting.dev is the shared non-production estate, so this is where a
+# change is seen in its real deployed form before it is released.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'infra/**'
+      - '.github/workflows/terraform.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dev:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: dev
+      project_name: fjconsulting-website-dev
+      site_url: https://www.fjconsulting.dev
+      # Never indexable. The dev site must not compete with production for the
+      # company's own name.
+      indexable: false
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
