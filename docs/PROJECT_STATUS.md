@@ -1,75 +1,137 @@
 # Project Status — FJ Cloud & AI Consulting Website
 
-_Last updated: 2026-07-14_
+_Last updated: 2026-07-19_
 
-This file is the single source of truth for **where we left off**. Update it at
-the end of each working session.
+Single source of truth for **where we left off**. Update it at the end of each
+working session.
 
 ## Current status
 
-- ✅ Requirements gathered and design approved (brainstorming).
-- ✅ Design spec written, architect-validated, and committed:
-  `docs/superpowers/specs/2026-07-14-fjconsulting-website-design.md`.
-- ✅ README + this status doc added.
-- 🔄 **Domain transfer in progress** — `fjconsulting.dev` moved to Cloudflare;
-  waiting for the nameserver takeover to propagate and the zone to go active.
-- ⏳ **Phase 1 site build not started** — next step once we resume.
+- ✅ Requirements, design spec, repo rules and conventions on `main` (PRs #1, #2 merged).
+- ✅ **`fjconsulting.dev` zone is live on Cloudflare.** The transfer completed.
+- ✅ **Phase 1 built.** Astro static site, full brand, all sections, contact-form
+  UI with delivery stubbed. Verified across 320–1600px, WCAG 2.2 AA contrast
+  asserted in CI.
+- ✅ **CI/CD built.** Reusable deploy workflow, dev on merge to `main`,
+  production on SemVer tag.
+- ✅ **Phase 2 IaC written.** Terraform Cloud config plus a reusable
+  `pages-app` module, validated against Cloudflare provider 5.22.
+- ⏳ **Not yet deployed.** Blocked only on repository secrets (see below).
+- ⏳ Phase 3 (contact delivery via Mailgun + Turnstile) not started.
 
-## Next step (when we resume)
+## Blocking: what the owner must do
 
-1. Confirm the Cloudflare zone for `fjconsulting.dev` is **active**.
-2. Produce the **Phase 1 implementation plan** (writing-plans skill).
-3. Build the Astro single-page site → deploy to `*.pages.dev`.
+Nothing ships until these exist. Everything else is ready.
+
+### 1. GitHub repository secrets (blocks the first deploy)
+
+- [ ] `CLOUDFLARE_API_TOKEN` — scope **Account → Cloudflare Pages: Edit**
+- [ ] `CLOUDFLARE_ACCOUNT_ID` — Cloudflare dashboard, right sidebar
+
+### 2. GitHub Environments (recommended before tagging a release)
+
+- [ ] Create environment `dev` (no protection needed)
+- [ ] Create environment `prod` with a **required reviewer** protection rule, so
+      a tag push requests a release and approval grants it
+
+### 3. Terraform Cloud (blocks the custom domain, not the site)
+
+- [ ] VCS-driven workspace connected to this repo, working directory `infra/`
+- [ ] Confirm the org/workspace names in `infra/main.tf` match reality
+      (currently assumes org `fjconsulting`, workspace `fjconsulting-website`)
+- [ ] Workspace variable `account_id` (Terraform variable)
+- [ ] Workspace variable `CLOUDFLARE_API_TOKEN` (environment, **sensitive**) —
+      needs **Zone: DNS Edit**, **Zone: Zone Read**, **Account: Pages Edit**
+
+## Order of operations for going live
+
+1. Add the two GitHub secrets.
+2. Merge this PR. `deploy-dev.yml` runs, `wrangler` creates the
+   `fjconsulting-website-dev` Pages project, site is live on `*.pages.dev`.
+3. Connect the Terraform Cloud workspace and apply. `www.fjconsulting.dev`
+   starts serving.
+4. Review the live dev site, correct the drafted copy.
+5. Tag `v1.0.0` when ready. Production deploy will fail until step 6, which is
+   expected and harmless.
+6. When `fjconsulting.io` moves to Cloudflare: set `enable_prod = true` in
+   Terraform, apply, then re-tag or re-run the prod workflow.
+
+## Environments and promotion
+
+| | dev | prod |
+| --- | --- | --- |
+| Domain | `www.fjconsulting.dev` | `fjconsulting.io` |
+| Pages project | `fjconsulting-website-dev` | `fjconsulting-website-prod` |
+| Trigger | push to `main` | push a `v*.*.*` tag |
+| Indexable | no (`noindex` + `Disallow`) | yes |
+
+**Promotion model: tag-triggered.** `main` flows continuously to dev. A release
+is the deliberate act of tagging a commit that has already been running there.
+The prod workflow refuses tags on commits that are not ancestors of `main`, so
+nothing can reach production without having been merged and deployed to dev
+first.
+
+Note: dev and prod are **rebuilt from the same commit** rather than promoting
+one binary artifact. Canonical URLs, Open Graph tags, `robots.txt` and the
+sitemap all carry the origin, so the artifact is genuinely environment-specific.
+The commit is the unit promoted, and the tag records exactly which one.
+
+## Reusability for future apps
+
+`fjconsulting.dev` is the shared non-production estate. Onboarding a new app is:
+
+1. Add a `modules/pages-app` block in `infra/main.tf` with its hostname.
+2. Copy `.github/workflows/deploy-dev.yml`, change the three inputs.
+3. First CI run creates the Pages project; Terraform attaches the domain.
+
+## Verification in CI
+
+| Check | What it catches |
+| --- | --- |
+| `scripts/check-contrast.mjs` | A palette change that drops text below WCAG 2.2 AA |
+| `scripts/check-build.mjs` | Blank-page regressions, wrong-environment URLs, prod shipping `noindex` |
+| `astro check` | Type errors |
+| Post-deploy smoke test | A deploy that succeeded but does not actually serve the site |
+| `terraform fmt` / `validate` | Infra syntax, before the TFC run is queued |
 
 ## Conventions
 
-- **Semantic Versioning** is adopted for commits, PRs, and releases.
-  - Commit messages and PR titles follow **Conventional Commits**
-    (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `ci:`, …).
-  - Releases are tagged **`vMAJOR.MINOR.PATCH`** ([SemVer](https://semver.org)):
-    `fix` → patch, `feat` → minor, `!` / `BREAKING CHANGE` → major.
-- **Every change goes through a PR.** The owner is the only one who merges, and
-  only after explicit approval. No direct pushes to `main`, no auto-merge.
+- **Semantic Versioning**; commits and PR titles follow **Conventional Commits**
+  (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `ci:`).
+- Releases tagged `vMAJOR.MINOR.PATCH`: `fix` → patch, `feat` → minor,
+  `!` / `BREAKING CHANGE` → major.
+- **Every change goes through a PR.** The owner is the only one who merges.
+
+## Backlog
+
+**Next up**
+- [ ] Replace drafted About copy with Flamarion's real background (biggest
+      credibility win available; everything else is polish)
+- [ ] Phase 3: contact form delivery (Pages Function → Mailgun, Turnstile +
+      honeypot). The honeypot field and the `formEnabled` flag are already in
+      place; flip `contact.formEnabled` in `src/data/site.ts` when the endpoint
+      is live
+- [ ] Decide Mailgun sending domain and destination inbox
+
+**Later**
+- [ ] Lighthouse CI budget in the pipeline
+- [ ] Preview deployments for pull requests (branch previews on the dev project)
+- [ ] Rollback runbook (Cloudflare keeps prior deployments; document promoting one)
+- [ ] Analytics, if wanted. Cloudflare Web Analytics is cookie-free and needs no
+      consent banner
+- [ ] Confirm the six service descriptions against real engagement history
+- [ ] `security.txt`, and a plain-language privacy note once the form collects data
 
 ## Key decisions (locked)
 
-| Topic          | Decision                                                             |
-| -------------- | ------------------------------------------------------------------- |
-| Generator      | Astro, static output, **no** CF adapter / SSR                       |
-| Hosting        | Cloudflare Pages (`*.pages.dev` first, custom domain later)         |
-| IaC            | Terraform Cloud, **VCS-driven** workspace                           |
-| CI/CD          | GitHub Actions + `cloudflare/wrangler-action@v3`                    |
-| Domain         | `fjconsulting.dev` (`.io` left untouched — hosts unrelated prod)    |
-| Contact form   | Pages Function → Mailgun, **deferred to Phase 3**                   |
-| Brand          | Navy `#131A2B` + gold `#F3D488→#D9A441`, dark theme                 |
-| Pages project  | Created by first `wrangler` deploy, later **imported** into TF      |
-
-## What the owner can do now to expedite
-
-These unblock Phase 1 CI and Phase 2 IaC. None are required to *start* the build,
-but having them ready removes wait time later.
-
-### For Phase 1 (deploy to `*.pages.dev`)
-- [ ] Create a **Cloudflare API token** scoped to **Account → Cloudflare Pages: Edit**.
-- [ ] Grab the **Cloudflare Account ID** (Cloudflare dashboard → right sidebar).
-- [ ] Decide the **Pages project name** (proposed: `fj-consulting`).
-- [ ] Add GitHub repo secrets:
-  - [ ] `CLOUDFLARE_API_TOKEN`
-  - [ ] `CLOUDFLARE_ACCOUNT_ID`
-
-### For Phase 2 (Terraform Cloud + custom domain)
-- [ ] Create a **Terraform Cloud workspace** (VCS-driven), connected to this repo,
-      with working directory `infra/`.
-- [ ] Add a **broader Cloudflare API token** to the TFC workspace as a *sensitive*
-      variable — scope: **Zone: DNS Edit**, **Account → Cloudflare Pages: Edit**,
-      and **Zone: Zone Read/Edit** for `fjconsulting.dev`.
-- [ ] Confirm the `fjconsulting.dev` zone is **active** in Cloudflare (post-transfer).
-
-### For Phase 3 (contact form — later, no action needed yet)
-- [ ] Decide the destination inbox (e.g. `info@fjconsulting.io`) and Mailgun sending domain.
-- [ ] Have the **Mailgun API key** ready (stored as a Cloudflare/TFC secret, never committed).
-
-## Content still to finalize (can be placeholders at first)
-- [ ] Hero tagline (draft exists in spec) — keep or replace.
-- [ ] About blurb — personalize or approve the drafted placeholder.
-- [ ] Confirm the 6 service cards' wording.
+| Topic | Decision |
+| --- | --- |
+| Generator | Astro 7, static output, **no** CF adapter / SSR |
+| Hosting | Cloudflare Pages, two projects (dev + prod) |
+| IaC | Terraform Cloud, VCS-driven, reusable `pages-app` module |
+| CI/CD | GitHub Actions, reusable `deploy.yml` called per environment |
+| Promotion | main → dev automatically; SemVer tag → prod |
+| Domains | `.dev` = shared non-prod estate, `.io` = production |
+| Fonts | Archivo Variable + IBM Plex Mono, self-hosted, 50KB |
+| Contact form | UI only in v1, Mailgun in Phase 3 |
+| Indexing | Only production is indexable; dev ships `noindex` |
