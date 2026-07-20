@@ -32,7 +32,6 @@ const jsonLd = {
       description: meta.description,
       image: ogImage,
       logo: ogImage,
-      founder: { '@type': 'Person', name: company.owner },
       address: {
         '@type': 'PostalAddress',
         streetAddress: company.address.street,
@@ -129,7 +128,7 @@ const jsonLd = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <meta name="author" content={company.owner} />
+    <meta name="author" content={company.name} />
     <!-- Only the production build opts in to indexing; every other deployment
          ships noindex so it cannot outrank or duplicate the real site. -->
     <meta

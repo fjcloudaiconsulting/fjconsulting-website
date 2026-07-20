@@ -9,7 +9,6 @@
 export const company = {
   name: 'FJ Cloud & AI Consulting',
   shortName: 'FJ Consulting',
-  owner: 'Flamarion Jorge',
   email: 'info@fjconsulting.io',
   kvk: '42010737',
   vat: 'NL005431862B54',
@@ -62,8 +61,8 @@ export const services = [
     id: 'kubernetes',
     title: 'Kubernetes',
     summary:
-      'Cluster design, and the Day-2 work that actually decides whether it holds up: upgrades, autoscaling, observability, and the on-call reality of running it.',
-    stack: ['EKS', 'GKE', 'AKS', 'Argo CD', 'Flux', 'Helm'],
+      'Cluster design on vanilla and managed Kubernetes alike, plus the Day-2 work that decides whether it holds up: upgrades, autoscaling, observability, and the on-call reality of running it.',
+    stack: ['kubeadm', 'Cluster API', 'EKS', 'GKE', 'AKS', 'Argo CD', 'Flux'],
   },
   {
     id: 'cloud',
@@ -115,11 +114,11 @@ export const approach = [
 ] as const;
 
 export const about = {
-  heading: 'A one-person consultancy, which is the point.',
+  heading: 'Independent, senior, and hands-on.',
   paragraphs: [
-    `FJ Cloud & AI Consulting is run by Flamarion Jorge from Amersfoort. You get the person who does the work, not an account manager and a rotating bench.`,
-    `Engagements tend to take one of two shapes. Either a team needs senior infrastructure capacity for a defined stretch and I join it, or a platform needs designing and standing up and the team takes it over once it runs. Both end the same way, with infrastructure your engineers understand and can change on their own.`,
-    `Independent means no reseller agreements and no partner quotas. When the honest recommendation is the cheaper tool, or no new tool at all, that is the recommendation you get.`,
+    `FJ Cloud & AI Consulting is an independent infrastructure practice based in Amersfoort. You work directly with the senior people doing the work, not an account manager and a rotating bench.`,
+    `Engagements tend to take one of two shapes. Either a team needs senior infrastructure capacity for a defined stretch, or a platform needs designing and standing up for the team to own once it runs. Both end the same way: infrastructure your engineers understand and can change on their own.`,
+    `Independent means no reseller agreements and no partner quotas. When the honest recommendation is the cheaper tool, or no new tool at all, that is what you get.`,
   ],
 } as const;
 
