@@ -31,13 +31,15 @@ const { address } = company;
           </address>
         </dd>
       </div>
-      <div>
-        <dt class="mono">KvK</dt>
-        <dd>{company.kvk}</dd>
-      </div>
-      <div>
-        <dt class="mono">BTW-id</dt>
-        <dd>{company.vat}</dd>
+      <div class="footer__fiscal">
+        <div>
+          <dt class="mono">KvK</dt>
+          <dd>{company.kvk}</dd>
+        </div>
+        <div>
+          <dt class="mono">BTW-id</dt>
+          <dd>{company.vat}</dd>
+        </div>
       </div>
       <div>
         <dt class="mono">Contact</dt>
@@ -50,9 +52,6 @@ const { address } = company;
 
   <div class="shell footer__base">
     <p class="mono">&copy; {year} {company.name}</p>
-    <p class="mono footer__colophon">
-      Astro · Cloudflare Pages · Terraform
-    </p>
   </div>
 </footer>
 
@@ -97,19 +96,19 @@ const { address } = company;
     line-height: 1.7;
   }
 
+  /* KvK and BTW-id are one fiscal block, stacked in a single column rather than
+     spread across two grid cells. */
+  .footer__fiscal {
+    display: grid;
+    gap: var(--s-4);
+  }
+
   .footer__base {
     display: flex;
     flex-wrap: wrap;
     gap: var(--s-3) var(--s-5);
-    justify-content: space-between;
     padding-block: var(--s-5);
     border-top: 1px solid var(--line);
-  }
-
-  /* The stack is named because for this business the build is part of the
-     pitch, not because a footer needs a colophon. */
-  .footer__colophon {
-    color: var(--ink-faint);
   }
 
   @media (min-width: 40rem) {
