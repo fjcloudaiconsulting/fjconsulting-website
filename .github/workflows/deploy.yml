@@ -158,29 +158,63 @@ jobs:
 
       # Deploying is not the same as working. Fetch the deployment that was just
       # published and assert it actually serves the site.
+      #
+      # Both <hash>.<project>.pages.dev and <project>.pages.dev are covered by a
+      # single per-project certificate that Cloudflare provisions asynchronously
+      # when the project is created. On the very first deploy of a new project
+      # that provisioning races this step, and losing the race shows up as a TLS
+      # handshake failure, not an HTTP error:
+      #
+      #   curl: (35) OpenSSL/3.0.13: error:0A000410:SSL routines::sslv3 alert
+      #         handshake failure
+      #
+      # So connection-level failures are retried over a generous window rather
+      # than treated as a dead deployment, and both hostnames are tried each
+      # round: whichever gets the certificate first is enough to prove the
+      # deployment is serving.
       - name: Smoke-test the deployment
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
-          SITE_URL: ${{ inputs.site_url }}
+          PROJECT_NAME: ${{ inputs.project_name }}
         run: |
-          set -euo pipefail
-          target="${DEPLOY_URL:-$SITE_URL}"
-          echo "Smoke-testing $target"
+          set -uo pipefail
 
-          for attempt in 1 2 3 4 5; do
-            code=$(curl -sS -o /tmp/body.html -w '%{http_code}' --max-time 20 "$target" || echo 000)
-            if [ "$code" = "200" ]; then
-              break
-            fi
-            echo "attempt $attempt: HTTP $code, retrying in 5s"
-            sleep 5
+          targets="https://${PROJECT_NAME}.pages.dev"
+          if [ -n "${DEPLOY_URL:-}" ]; then
+            targets="${DEPLOY_URL} ${targets}"
+          fi
+
+          deadline=$(( $(date +%s) + 300 ))
+          attempt=0
+          served=""
+
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            attempt=$((attempt + 1))
+            for target in $targets; do
+              code=$(curl -sS -o /tmp/body.html -w '%{http_code}' --max-time 20 "$target" 2>/tmp/curl.err)
+              rc=$?
+              if [ "$rc" -eq 0 ] && [ "$code" = "200" ]; then
+                served="$target"
+                break 2
+              fi
+              if [ "$rc" -ne 0 ]; then
+                echo "attempt ${attempt}: ${target} -> $(tr -d '\n' < /tmp/curl.err)"
+              else
+                echo "attempt ${attempt}: ${target} -> HTTP ${code}"
+              fi
+            done
+            sleep 15
           done
 
-          if [ "$code" != "200" ]; then
-            echo "::error::Deployment did not return HTTP 200 (got $code)"
+          if [ -z "$served" ]; then
+            echo "::error::No deployment hostname served HTTP 200 within 5 minutes."
             exit 1
           fi
 
+          echo "Serving: ${served}"
+
+          # A 200 only proves something answered. Assert it is actually this site
+          # and not an error page or a placeholder.
           for needle in "Cloud, Kubernetes and AI infrastructure" "info@fjconsulting.io"; do
             if ! grep -qF "$needle" /tmp/body.html; then
               echo "::error::Deployed page is missing expected content: $needle"
@@ -188,7 +222,7 @@ jobs:
             fi
           done
 
-          echo "Deployment healthy: $target"
+          echo "Deployment healthy: ${served}"
 
       - name: Summary
         env:
