@@ -1,0 +1,343 @@
+@import './tokens.css';
+
+/* =======================================================================
+   Reset
+   ======================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Anchor targets clear the sticky nav instead of hiding underneath it. */
+  scroll-padding-top: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-base);
+  line-height: var(--lh-body);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* The page must never scroll sideways, whatever the copy does. */
+  overflow-x: hidden;
+}
+
+img,
+svg,
+picture {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+
+:target {
+  scroll-margin-top: 6rem;
+}
+
+/* =======================================================================
+   Typography
+   ======================================================================= */
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  /* Floor is -0.04em; display sizes sit at the edge, never past it. */
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--t-display);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: var(--t-2xl);
+  letter-spacing: -0.028em;
+}
+
+h3 {
+  font-size: var(--t-lg);
+  letter-spacing: -0.018em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Monospace label. Used for metadata and technical specifics only, never for
+   body prose, and capped at short strings so it never becomes all-caps copy. */
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  line-height: 1.4;
+}
+
+.lede {
+  font-size: var(--t-md);
+  line-height: 1.6;
+  color: var(--ink-muted);
+  max-width: var(--measure);
+}
+
+.prose p {
+  color: var(--ink-muted);
+  max-width: var(--measure);
+}
+
+.prose p + p {
+  margin-top: var(--s-4);
+}
+
+/* =======================================================================
+   Layout
+   ======================================================================= */
+
+.shell {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: var(--section-y);
+}
+
+.section--tight {
+  padding-block: var(--section-y-tight);
+}
+
+/* Section heading block. No uppercase eyebrow above each one: hierarchy comes
+   from scale and a hairline, which is enough. */
+.section-head {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 46rem;
+  margin-bottom: var(--s-8);
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 0;
+}
+
+/* =======================================================================
+   Accessibility primitives
+   ======================================================================= */
+
+.skip-link {
+  position: absolute;
+  left: var(--s-4);
+  top: var(--s-4);
+  z-index: var(--z-toast);
+  padding: var(--s-3) var(--s-4);
+  background: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  transform: translateY(calc(-100% - var(--s-5)));
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* One focus treatment for the whole site: a gold ring that clears 3:1 against
+   both surfaces (verified in scripts/check-contrast.mjs). */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* =======================================================================
+   Buttons
+   ======================================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 0.8rem 1.35rem;
+  border-radius: var(--r-md);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  /* Comfortably above the 24x24 WCAG 2.2 target-size minimum. */
+  min-height: 2.75rem;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.btn--primary {
+  background: var(--gold);
+  color: var(--gold-ink);
+}
+
+.btn--primary:hover {
+  background: var(--gold-hi);
+}
+
+.btn--ghost {
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+}
+
+.btn--ghost:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:active {
+    transform: none;
+  }
+}
+
+/* Inline text link with a gold underline that grows from the left on hover. */
+.link {
+  color: var(--ink);
+  text-decoration: none;
+  background-image: linear-gradient(var(--gold), var(--gold));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1px;
+  padding-bottom: 2px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--gold);
+}
+
+/* =======================================================================
+   Motion
+   ======================================================================= */
+
+/*
+ * Reveal animations are strictly additive. Content is fully visible by default;
+ * the hidden-then-revealed state only exists once the runtime has confirmed
+ * both JS and motion preference, by setting data-motion="on" on <html>.
+ *
+ * This is why headless renderers, crawlers, background tabs and no-JS visitors
+ * all see a complete page rather than a blank one.
+ */
+[data-motion='on'] [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out-quart),
+    transform var(--dur-slow) var(--ease-out-quart);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-motion='on'] [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt and braces: even if data-motion were set, nothing moves. */
+  [data-motion='on'] [data-reveal],
+  [data-motion='on'] [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

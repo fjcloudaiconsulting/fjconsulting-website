@@ -1,0 +1,149 @@
+name: Deploy
+
+# Reusable deploy job. Not triggered directly: deploy-dev.yml and
+# deploy-prod.yml call it with different inputs.
+#
+# This is the piece meant to be copied for the next app onboarded under
+# fjconsulting.dev. Everything environment-specific arrives as an input, so a
+# new project needs its own caller workflows and a Terraform module block,
+# not a new pipeline.
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'GitHub Environment to deploy into (dev or prod).'
+        required: true
+        type: string
+      project_name:
+        description: 'Cloudflare Pages project name.'
+        required: true
+        type: string
+      site_url:
+        description: 'Origin this build is served from. Bakes canonical/OG URLs.'
+        required: true
+        type: string
+      indexable:
+        description: 'Whether search engines may index this deployment.'
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+
+permissions:
+  contents: read
+
+# One deploy at a time per environment. Queued rather than cancelled, so a
+# deployment already uploading is never left half-applied.
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.site_url }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify colour contrast
+        run: node scripts/check-contrast.mjs
+
+      # The build is environment-specific by design: canonical URLs, Open Graph
+      # tags, the sitemap and robots.txt all carry the origin. That means dev
+      # and prod are rebuilt from the same commit rather than promoting one
+      # binary artifact. The commit is the thing promoted, and the tag records
+      # exactly which one.
+      - name: Build
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+          SITE_INDEXABLE: ${{ inputs.indexable }}
+        run: npm run build
+
+      - name: Verify built output
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+          SITE_INDEXABLE: ${{ inputs.indexable }}
+        run: node scripts/check-build.mjs
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Run from the repo root so functions/ is discovered relative to CWD
+          # when the contact endpoint lands in Phase 3.
+          command: >-
+            pages deploy dist
+            --project-name=${{ inputs.project_name }}
+            --branch=main
+            --commit-dirty=true
+
+      # Deploying is not the same as working. Fetch the deployment that was just
+      # published and assert it actually serves the site.
+      - name: Smoke-test the deployment
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+          SITE_URL: ${{ inputs.site_url }}
+        run: |
+          set -euo pipefail
+          target="${DEPLOY_URL:-$SITE_URL}"
+          echo "Smoke-testing $target"
+
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -sS -o /tmp/body.html -w '%{http_code}' --max-time 20 "$target" || echo 000)
+            if [ "$code" = "200" ]; then
+              break
+            fi
+            echo "attempt $attempt: HTTP $code, retrying in 5s"
+            sleep 5
+          done
+
+          if [ "$code" != "200" ]; then
+            echo "::error::Deployment did not return HTTP 200 (got $code)"
+            exit 1
+          fi
+
+          for needle in "Cloud, Kubernetes and AI infrastructure" "info@fjconsulting.io"; do
+            if ! grep -qF "$needle" /tmp/body.html; then
+              echo "::error::Deployed page is missing expected content: $needle"
+              exit 1
+            fi
+          done
+
+          echo "Deployment healthy: $target"
+
+      - name: Summary
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          {
+            echo "### Deployed to \`${{ inputs.environment }}\`"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Pages project | \`${{ inputs.project_name }}\` |"
+            echo "| Site URL | ${{ inputs.site_url }} |"
+            echo "| Deployment URL | ${DEPLOY_URL:-n/a} |"
+            echo "| Indexable | \`${{ inputs.indexable }}\` |"
+            echo "| Commit | \`${{ github.sha }}\` |"
+            echo "| Ref | \`${{ github.ref_name }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,55 @@
+name: Terraform
+
+# Format and validation gate for infra/.
+#
+# Plan and apply happen in Terraform Cloud (VCS-driven workspace), which is the
+# only place holding Cloudflare credentials and state. This workflow is the
+# fast, credential-free check that catches syntax and formatting problems
+# before the TFC run is even queued.
+
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+      - '.github/workflows/terraform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.2
+          terraform_wrapper: false
+
+      - name: Check formatting
+        run: terraform -chdir=infra fmt -recursive -check -diff
+
+      # -backend=false: no Terraform Cloud credentials needed, and no state is
+      # touched. Enough to resolve providers and type-check the configuration.
+      - name: Initialise without backend
+        run: terraform -chdir=infra init -backend=false -input=false
+
+      - name: Validate
+        run: terraform -chdir=infra validate
+
+      - name: Validate module in isolation
+        run: |
+          terraform -chdir=infra/modules/pages-app init -backend=false -input=false
+          terraform -chdir=infra/modules/pages-app validate

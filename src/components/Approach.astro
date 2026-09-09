@@ -1,0 +1,80 @@
+---
+import { approach } from '../data/site';
+---
+
+<section class="section section--tight approach-section" id="approach">
+  <div class="shell">
+    <div class="section-head" data-reveal>
+      <h2>How an engagement runs</h2>
+      <p class="lede">
+        The same three steps every time, whether it is a two-week review or a
+        platform build that runs for months.
+      </p>
+    </div>
+
+    <!--
+      Numbered because this genuinely is an ordered sequence and the order
+      carries meaning. It is the only numbered thing on the page; section
+      headings elsewhere deliberately have no numeric marker.
+    -->
+    <ol class="approach" role="list">
+      {
+        approach.map((step, i) => (
+          <li class="step" data-reveal style={`--reveal-delay: ${i * 80}ms`}>
+            <span class="mono step__num" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3 class="step__title">{step.title}</h3>
+            <p class="step__body">{step.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .approach-section {
+    background: var(--surface);
+    border-block: 1px solid var(--line);
+  }
+
+  .approach {
+    display: grid;
+    gap: var(--s-7);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: none;
+  }
+
+  .step {
+    display: grid;
+    gap: var(--s-3);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .step__num {
+    color: var(--gold);
+    letter-spacing: 0.12em;
+  }
+
+  .step__title {
+    font-size: var(--t-md);
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+
+  .step__body {
+    color: var(--ink-muted);
+    max-width: 46ch;
+  }
+
+  @media (min-width: 50rem) {
+    .approach {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s-6);
+    }
+  }
+</style>

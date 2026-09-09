@@ -1,0 +1,220 @@
+---
+import '../styles/fonts.css';
+import '../styles/global.css';
+import { company, meta, services } from '../data/site';
+import { indexable } from '../config/env';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = meta.title, description = meta.description } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL('/og.png', Astro.site).href;
+
+/**
+ * Structured data. Two graph nodes: the organisation itself, and the catalogue
+ * of services. Search engines use this for rich results; generative engines use
+ * it to answer "who does Kubernetes consulting in the Netherlands" with a
+ * citation rather than a guess.
+ */
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ProfessionalService',
+      '@id': `${canonical}#organization`,
+      name: company.name,
+      url: canonical,
+      email: `mailto:${company.email}`,
+      description: meta.description,
+      image: ogImage,
+      logo: ogImage,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: company.address.street,
+        postalCode: company.address.postalCode,
+        addressLocality: company.address.city,
+        addressCountry: company.address.countryCode,
+      },
+      areaServed: [
+        { '@type': 'Country', name: 'Netherlands' },
+        { '@type': 'Place', name: 'European Union' },
+      ],
+      knowsAbout: [
+        'Kubernetes',
+        'Infrastructure as Code',
+        'Terraform',
+        'OpenStack',
+        'Cloud architecture',
+        'AI infrastructure',
+        'MLOps',
+        'Platform engineering',
+      ],
+      identifier: [
+        { '@type': 'PropertyValue', name: 'KvK', value: company.kvk },
+        { '@type': 'PropertyValue', name: 'BTW-id', value: company.vat },
+      ],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Consulting services',
+        itemListElement: services.map((service) => ({
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: service.title,
+            description: service.summary,
+          },
+        })),
+      },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${canonical}#website`,
+      url: canonical,
+      name: company.name,
+      inLanguage: meta.locale,
+      publisher: { '@id': `${canonical}#organization` },
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang={meta.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Preload the two font files the first paint needs. Stable, unhashed
+         paths, which is why they live in public/ rather than src/. -->
+    <link
+      rel="preload"
+      href="/fonts/archivo-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/ibm-plex-mono-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0E1420" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={company.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_NL" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <meta name="author" content={company.name} />
+    <!-- Only the production build opts in to indexing; every other deployment
+         ships noindex so it cannot outrank or duplicate the real site. -->
+    <meta
+      name="robots"
+      content={
+        indexable ? 'index, follow, max-image-preview:large' : 'noindex, nofollow'
+      }
+    />
+
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(jsonLd)}
+      is:inline
+    />
+
+    <!--
+      Runs before paint so the reveal state is set without a flash. Content is
+      visible by default; this only opts in to animating it, and only when JS is
+      running and the visitor has not asked for reduced motion. Crawlers,
+      headless renderers and no-JS visitors therefore always get the full page.
+    -->
+    <script is:inline>
+      if (
+        typeof window !== 'undefined' &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ) {
+        document.documentElement.dataset.motion = 'on';
+      }
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot />
+
+    <script>
+      /**
+       * Reveal-on-scroll.
+       *
+       * Two independent safety nets, because a reveal that fails closed ships a
+       * blank page:
+       *
+       * 1. The hidden state is scoped to [data-motion="on"], which only the
+       *    inline head script sets. No JS at all means everything is visible.
+       * 2. IntersectionObserver exists but never delivers callbacks in
+       *    non-painting contexts (background tabs, headless renderers, some
+       *    social-preview scrapers). Feature detection cannot catch that, so if
+       *    no entry has arrived shortly after setup we assume it is inert.
+       *
+       * The recovery drops data-motion instead of adding .is-revealed. In a
+       * context where the observer is dead, CSS transitions are frozen too, so
+       * adding the class would set up an animation that never runs and the page
+       * would stay blank. Removing the opt-in unmatches the rule that hides
+       * things in the first place, which needs no animation to take effect.
+       */
+      const root = document.documentElement;
+      const motionOn = root.dataset.motion === 'on';
+      const targets = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-reveal]'),
+      );
+
+      if (!motionOn || !('IntersectionObserver' in window)) {
+        root.dataset.motion = 'off';
+      } else {
+        let delivered = false;
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            delivered = true;
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-revealed');
+              observer.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -12% 0px', threshold: 0.05 },
+        );
+
+        targets.forEach((el) => observer.observe(el));
+
+        window.setTimeout(() => {
+          if (delivered) return;
+          observer.disconnect();
+          root.dataset.motion = 'off';
+        }, 1200);
+      }
+    </script>
+  </body>
+</html>

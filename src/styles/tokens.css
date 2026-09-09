@@ -1,0 +1,131 @@
+/*
+ * FJ Cloud & AI Consulting — design tokens
+ *
+ * The palette is anchored to the logo (deep navy + gold gradient) and expressed
+ * in OKLCH. Neutrals are tinted toward the brand's own blue hue (H 264) rather
+ * than toward a default warm/cool, so the greys belong to this brand.
+ *
+ * Contrast is verified, not assumed. See scripts/check-contrast.mjs — every
+ * foreground/background pair used in the site is asserted at WCAG 2.2 AA there
+ * and the check runs in CI.
+ */
+
+:root {
+  /* ---- Surfaces ------------------------------------------------------ */
+  /* Page field. The deepest navy; the site is drenched in it. */
+  --bg: oklch(0.176 0.021 264);
+  /* Raised surface: nav bar, hovered rows, form fields. Lifted far enough above
+     --bg to be perceptible on its own (the logo's #131A2B sat at 1.08:1, which
+     reads as no separation at all on a calibrated display). */
+  --surface: oklch(0.245 0.029 265);
+  /* One step further up, for hover on an already-raised surface. */
+  --surface-hi: oklch(0.288 0.032 265);
+
+  /* ---- Ink ----------------------------------------------------------- */
+  --ink: oklch(0.968 0.005 250);
+  /* Secondary prose. Lifted above the logo's #9AA4B8 so it clears 4.5:1
+     against --bg for body copy, not just large text. */
+  --ink-muted: oklch(0.762 0.023 262);
+  /* Faint: mono labels and metadata only, never body prose. Verified >= 4.5:1. */
+  --ink-faint: oklch(0.688 0.022 262);
+
+  /* ---- Accent -------------------------------------------------------- */
+  /* The logo gold. Spent like currency: CTAs, the one thing that matters in a
+     section, the status dot. Under 10% of any viewport. Never gradient text. */
+  --gold: oklch(0.792 0.113 79);
+  --gold-hi: oklch(0.877 0.077 85);
+  /* Ink to place ON a gold fill. Near-black navy, not pure black. */
+  --gold-ink: oklch(0.176 0.021 264);
+  --gold-wash: oklch(0.792 0.113 79 / 0.11);
+
+  /* ---- Lines --------------------------------------------------------- */
+  /* Hairlines carry the structure that cards would otherwise carry. */
+  --line: oklch(0.968 0.005 250 / 0.11);
+  --line-strong: oklch(0.968 0.005 250 / 0.19);
+
+  /* ---- Status -------------------------------------------------------- */
+  --ok: oklch(0.78 0.14 158);
+  --danger: oklch(0.74 0.16 25);
+
+  /* ---- Type ---------------------------------------------------------- */
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Mono',
+    Menlo, monospace;
+
+  /* Modular scale, ratio ~1.25 at the small end widening to ~1.4 at display
+     sizes so hierarchy stays obvious rather than flat. */
+  --t-mono: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-base: 1rem;
+  --t-md: clamp(1.0625rem, 0.2vw + 1rem, 1.1875rem);
+  --t-lg: clamp(1.25rem, 0.5vw + 1.1rem, 1.5rem);
+  --t-xl: clamp(1.625rem, 1.2vw + 1.3rem, 2.25rem);
+  --t-2xl: clamp(2.125rem, 2.4vw + 1.5rem, 3.25rem);
+  /* Display ceiling stays under 6rem. */
+  --t-display: clamp(2.5rem, 5.2vw + 1rem, 4.75rem);
+
+  --lh-tight: 1.05;
+  --lh-snug: 1.2;
+  --lh-body: 1.65;
+
+  /* ---- Space --------------------------------------------------------- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 8rem;
+  /* Section rhythm deliberately varies rather than repeating one value. */
+  --section-y: clamp(4.5rem, 9vw, 8.5rem);
+  --section-y-tight: clamp(3.5rem, 6vw, 5.5rem);
+
+  --gutter: clamp(1.25rem, 5vw, 3.5rem);
+  --measure: 68ch;
+  --max-w: 76rem;
+
+  /* ---- Radii & shadow ------------------------------------------------ */
+  /* Small radii only. Large pill shapes read consumer-app, not engineering. */
+  --r-sm: 3px;
+  --r-md: 5px;
+  --shadow-lift: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px oklch(0 0 0 / 0.28);
+
+  /* ---- Motion -------------------------------------------------------- */
+  /* Exponential ease-out only. No bounce, no elastic. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --dur-fast: 140ms;
+  --dur: 260ms;
+  --dur-slow: 620ms;
+
+  /* ---- Z scale ------------------------------------------------------- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-backdrop: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}
+
+/*
+ * The site is dark by committed choice, not by default. The scene: a hiring
+ * manager or architect opening a referral link on a laptop, usually inside an
+ * IDE-and-terminal working day. The logo is drawn for a navy field, and a light
+ * inversion would strand the gold, which fails contrast on white. Dark it is,
+ * so there is no light-mode variant to maintain.
+ *
+ * prefers-contrast: more strengthens the hairlines and lifts muted ink rather
+ * than repainting the palette.
+ */
+@media (prefers-contrast: more) {
+  :root {
+    --ink-muted: oklch(0.86 0.015 262);
+    --ink-faint: oklch(0.82 0.018 262);
+    --line: oklch(0.968 0.005 250 / 0.26);
+    --line-strong: oklch(0.968 0.005 250 / 0.42);
+  }
+}

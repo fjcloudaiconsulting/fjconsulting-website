@@ -1,0 +1,123 @@
+---
+import { services } from '../data/site';
+---
+
+<section class="section" id="services">
+  <div class="shell">
+    <div class="section-head" data-reveal>
+      <h2>What I work on</h2>
+      <p class="lede">
+        Six areas, though most engagements draw on several at once. The
+        technologies listed are ones I have run in production, not a keyword
+        sweep.
+      </p>
+    </div>
+  </div>
+
+  <!--
+    A list, not a card grid. Six identical boxes would say "template"; full-width
+    rows separated by hairlines let each entry be read at a glance and give the
+    technical detail room to be specific.
+  -->
+  <ul class="services" role="list">
+    {
+      services.map((service, i) => (
+        <li class="service" data-reveal style={`--reveal-delay: ${i * 55}ms`}>
+          <div class="shell service__inner">
+            <h3 class="service__title">{service.title}</h3>
+            <div class="service__body">
+              <p class="service__summary">{service.summary}</p>
+              <p class="mono service__stack">
+                {service.stack.map((tech, t) => (
+                  <>
+                    {t > 0 && <span class="service__sep" aria-hidden="true"> · </span>}
+                    {tech}
+                  </>
+                ))}
+              </p>
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .services {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+
+  /* The whole row responds to hover, so the feedback matches what the eye reads
+     as one unit. Done with :hover on the row itself rather than an overlay
+     element: the row is not a link, and an empty <a> would be a link with no
+     accessible name for the sake of a background colour. */
+  .service {
+    border-bottom: 1px solid var(--line);
+    transition: background-color var(--dur) var(--ease-out);
+  }
+
+  .service:hover {
+    background: var(--surface);
+  }
+
+  .service__inner {
+    display: grid;
+    gap: var(--s-2);
+    padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .service__title {
+    font-size: var(--t-lg);
+    font-weight: 600;
+    color: var(--ink);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .service:hover .service__title {
+    color: var(--gold);
+  }
+
+  .service__summary {
+    color: var(--ink-muted);
+    max-width: var(--measure);
+  }
+
+  .service__stack {
+    margin-top: var(--s-3);
+    color: var(--ink-faint);
+    /* Technology names are proper nouns; uppercasing them would make
+       "Weights & Biases" and "Argo CD" harder to read, not more designed. */
+    text-transform: none;
+    letter-spacing: 0.03em;
+  }
+
+  .service__sep {
+    color: var(--gold);
+    opacity: 0.55;
+  }
+
+  /* Two columns once there is room: the title holds the left rail so the six
+     entries scan vertically as a list of names. */
+  @media (min-width: 52rem) {
+    .service__inner {
+      grid-template-columns: minmax(12rem, 20fr) minmax(0, 34fr);
+      gap: var(--s-6);
+      align-items: start;
+    }
+
+    .service__title {
+      padding-top: 0.1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .service,
+    .service__title {
+      transition: none;
+    }
+  }
+</style>
