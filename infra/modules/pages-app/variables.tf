@@ -11,7 +11,7 @@ variable "zone_id" {
 variable "project_name" {
   description = <<-EOT
     Name of the existing Cloudflare Pages project. The project must already
-    exist: it is created by the first `wrangler pages deploy` from CI, not by
+    exist: it is created by the deploy workflow in CI, not by
     this module. See the note in main.tf.
   EOT
   type        = string
