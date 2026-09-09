@@ -9,7 +9,7 @@
 export const siteUrl = (
   import.meta.env.SITE_URL ??
   process.env.SITE_URL ??
-  'https://www.fjconsulting.dev'
+  'https://fjconsulting.dev'
 ).replace(/\/$/, '');
 
 /**

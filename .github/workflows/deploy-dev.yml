@@ -23,7 +23,7 @@ jobs:
     with:
       environment: dev
       project_name: fjconsulting-website-dev
-      site_url: https://www.fjconsulting.dev
+      site_url: https://fjconsulting.dev
       # Never indexable. The dev site must not compete with production for the
       # company's own name.
       indexable: false

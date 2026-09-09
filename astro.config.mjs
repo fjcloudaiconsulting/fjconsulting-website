@@ -13,7 +13,7 @@ import sitemap from '@astrojs/sitemap';
  * SITE_URL is injected per environment by CI so canonical URLs, the sitemap and
  * Open Graph tags point at the host actually serving the build.
  */
-const site = process.env.SITE_URL ?? 'https://www.fjconsulting.dev';
+const site = process.env.SITE_URL ?? 'https://fjconsulting.dev';
 
 export default defineConfig({
   site,

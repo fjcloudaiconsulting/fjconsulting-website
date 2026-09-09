@@ -28,13 +28,14 @@ and completeness on every commit.
 
 | | dev | prod |
 | --- | --- | --- |
-| Domain | `www.fjconsulting.dev` | `fjconsulting.io` |
+| Domain | `fjconsulting.dev`, `dev.fjconsulting.dev` | `fjconsulting.io` |
 | Trigger | push to `main` | push a `v*.*.*` tag |
 | Indexable | no | yes |
 
 `fjconsulting.dev` is the shared non-production estate for everything, not just
-this site. Future apps get their own subdomain and reuse the same Terraform
-module and deploy workflow.
+this site. The apex and `dev.fjconsulting.dev` both serve this project; future
+apps get their own subdomain and reuse the same Terraform module and deploy
+workflow. There is no `www` host: the apex is the canonical origin.
 
 Promotion is **tag-triggered**: `main` flows continuously to dev, and a release
 is the deliberate act of tagging a commit already running there. The production

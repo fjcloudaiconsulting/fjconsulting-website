@@ -1,6 +1,6 @@
 # Project Status — FJ Cloud & AI Consulting Website
 
-_Last updated: 2026-07-19_
+_Last updated: 2026-09-09_
 
 Single source of truth for **where we left off**. Update it at the end of each
 working session.
@@ -19,6 +19,13 @@ working session.
 - ⏳ **Not yet deployed.** Blocked only on repository secrets (see below).
 - ⏳ Phase 3 (contact delivery via Mailgun + Turnstile) not started.
 
+**Domain decision (2026-09-09):** the first published version lives on the
+`fjconsulting.dev` **apex**, with `dev.fjconsulting.dev` bound to the same Pages
+project. `www` is dropped. `.dev` remains non-production and keeps `noindex` +
+`Disallow`, so the site is live and shareable by link without competing with the
+future production site for the company's own name. `fjconsulting.io` is
+untouched and stays a separate, later exercise.
+
 ## Blocking: what the owner must do
 
 Nothing ships until these exist. Everything else is ready.
@@ -28,11 +35,11 @@ Nothing ships until these exist. Everything else is ready.
 - [ ] `CLOUDFLARE_API_TOKEN` — scope **Account → Cloudflare Pages: Edit**
 - [ ] `CLOUDFLARE_ACCOUNT_ID` — Cloudflare dashboard, right sidebar
 
-### 2. GitHub Environments (recommended before tagging a release)
+### 2. GitHub Environments
 
 - [ ] Create environment `dev` (no protection needed)
-- [ ] Create environment `prod` with a **required reviewer** protection rule, so
-      a tag push requests a release and approval grants it
+- [ ] `prod` is not needed yet. Create it, with a **required reviewer**
+      protection rule, only when `fjconsulting.io` is ready to be released to.
 
 ### 3. Terraform Cloud (blocks the custom domain, not the site)
 
@@ -48,19 +55,20 @@ Nothing ships until these exist. Everything else is ready.
 1. Add the two GitHub secrets.
 2. Merge this PR. `deploy-dev.yml` runs, `wrangler` creates the
    `fjconsulting-website-dev` Pages project, site is live on `*.pages.dev`.
-3. Connect the Terraform Cloud workspace and apply. `www.fjconsulting.dev`
-   starts serving.
-4. Review the live dev site, correct the drafted copy.
-5. Tag `v1.0.0` when ready. Production deploy will fail until step 6, which is
-   expected and harmless.
-6. When `fjconsulting.io` moves to Cloudflare: set `enable_prod = true` in
-   Terraform, apply, then re-tag or re-run the prod workflow.
+3. Connect the Terraform Cloud workspace and apply. `fjconsulting.dev` and
+   `dev.fjconsulting.dev` start serving.
+4. Review the live site, correct the drafted copy.
+
+Production is deliberately not part of this sequence. `deploy-prod.yml` only
+fires on a `v*.*.*` tag, and no tag should be pushed until `fjconsulting.io` has
+moved to Cloudflare and `enable_prod` has been flipped in Terraform. Until then
+the whole estate is the `.dev` zone.
 
 ## Environments and promotion
 
 | | dev | prod |
 | --- | --- | --- |
-| Domain | `www.fjconsulting.dev` | `fjconsulting.io` |
+| Domain | `fjconsulting.dev`, `dev.fjconsulting.dev` | `fjconsulting.io` |
 | Pages project | `fjconsulting-website-dev` | `fjconsulting-website-prod` |
 | Trigger | push to `main` | push a `v*.*.*` tag |
 | Indexable | no (`noindex` + `Disallow`) | yes |
@@ -131,7 +139,7 @@ The commit is the unit promoted, and the tag records exactly which one.
 | IaC | Terraform Cloud, VCS-driven, reusable `pages-app` module |
 | CI/CD | GitHub Actions, reusable `deploy.yml` called per environment |
 | Promotion | main → dev automatically; SemVer tag → prod |
-| Domains | `.dev` = shared non-prod estate, `.io` = production |
+| Domains | `.dev` = shared non-prod estate (apex + `dev.`, no `www`), `.io` = production |
 | Fonts | Archivo Variable + IBM Plex Mono, self-hosted, 50KB |
 | Contact form | UI only in v1, Mailgun in Phase 3 |
 | Indexing | Only production is indexable; dev ships `noindex` |

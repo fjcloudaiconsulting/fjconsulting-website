@@ -25,7 +25,7 @@ variable "project_name" {
 variable "hostnames" {
   description = <<-EOT
     Fully-qualified hostnames to bind to the project, for example
-    ["www.fjconsulting.dev"]. Apex domains are supported: Cloudflare flattens
+    ["app.fjconsulting.dev"]. Apex domains are supported: Cloudflare flattens
     the CNAME automatically.
   EOT
   type        = list(string)

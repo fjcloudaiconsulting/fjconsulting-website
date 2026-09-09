@@ -26,7 +26,7 @@ fail. Instead the first deploy creates it and Terraform attaches domains to it.
 
 | Environment | Zone | Pages project | Hostnames |
 | --- | --- | --- | --- |
-| dev | `fjconsulting.dev` | `fjconsulting-website-dev` | `www.fjconsulting.dev`, `fjconsulting.dev` |
+| dev | `fjconsulting.dev` | `fjconsulting-website-dev` | `fjconsulting.dev`, `dev.fjconsulting.dev` |
 | prod | `fjconsulting.io` | `fjconsulting-website-prod` | `fjconsulting.io`, `www.fjconsulting.io` |
 
 Production is gated behind `enable_prod`, which defaults to `false`. The `.io`
@@ -68,7 +68,7 @@ already exist:
    - `account_id` (Terraform variable) — the Cloudflare account ID
    - `CLOUDFLARE_API_TOKEN` (environment variable, **sensitive**)
 3. Let the VCS-driven plan run and apply it. DNS and the custom domain binding
-   appear, and `www.fjconsulting.dev` starts serving.
+   appear, and `fjconsulting.dev` starts serving.
 
 The Cloudflare API token for Terraform needs **Zone: DNS Edit**, **Zone: Zone
 Read**, and **Account: Cloudflare Pages Edit**. The token CI uses is narrower:

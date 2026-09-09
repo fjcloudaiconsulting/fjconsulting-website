@@ -20,7 +20,7 @@ variable "dev_project_name" {
 variable "dev_hostnames" {
   description = "Hostnames bound to the dev Pages project."
   type        = list(string)
-  default     = ["www.fjconsulting.dev", "fjconsulting.dev"]
+  default     = ["fjconsulting.dev", "dev.fjconsulting.dev"]
 }
 
 # ---- prod (fjconsulting.io) -------------------------------------------------
