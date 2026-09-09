@@ -33,12 +33,13 @@ The site itself doubles as a live demo of the company's Cloud/IaC practice.
   static `dist/` build.
 - **Cloudflare Pages** — hosting. Every deploy is served at a free `*.pages.dev`
   URL, so the site never depends on DNS to go live. Custom domain is attached later.
-- **GitHub Actions** — builds Astro and deploys via `cloudflare/wrangler-action@v3`
+- **GitHub Actions** — builds Astro and deploys via `cloudflare/wrangler-action@v4`
   (`wrangler pages deploy dist`). GitHub Actions owns **deployments**.
 - **Terraform Cloud** (VCS-driven workspace, working dir `infra/`) — manages the
   Cloudflare zone, DNS, and Pages custom-domain binding. The Pages project is
-  created by the first `wrangler` deploy, then **imported** into Terraform;
-  Terraform owns **project config**, not creation (avoids a create/create collision).
+  created by the deploy workflow's "Ensure the Pages project exists" step, then
+  **imported** into Terraform; Terraform owns **project config**, not creation
+  (avoids a create/create collision).
 - **Domain:** `fjconsulting.dev` (the `.io` domain is intentionally left untouched —
   it hosts unrelated production services). `.dev` is HSTS-preloaded (HTTPS-only);
   Cloudflare Pages serves valid HTTPS automatically, and local dev uses

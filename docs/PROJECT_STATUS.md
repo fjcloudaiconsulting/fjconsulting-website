@@ -53,8 +53,8 @@ Nothing ships until these exist. Everything else is ready.
 ## Order of operations for going live
 
 1. Add the two GitHub secrets.
-2. Merge this PR. `deploy-dev.yml` runs, `wrangler` creates the
-   `fjconsulting-website-dev` Pages project, site is live on `*.pages.dev`.
+2. Merge this PR. `deploy-dev.yml` runs, creates the `fjconsulting-website-dev`
+   Pages project if missing, deploys, site is live on `*.pages.dev`.
 3. Connect the Terraform Cloud workspace and apply. `fjconsulting.dev` and
    `dev.fjconsulting.dev` start serving.
 4. Review the live site, correct the drafted copy.

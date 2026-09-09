@@ -20,7 +20,9 @@ objects:
 
 Terraform deliberately does not declare `cloudflare_pages_project`. If it did,
 both CI and Terraform would try to create the project and one of them would
-fail. Instead the first deploy creates it and Terraform attaches domains to it.
+fail. Instead the deploy workflow creates it (an idempotent "Ensure the Pages
+project exists" step, because `wrangler pages deploy` will not create a missing
+project without a TTY), and Terraform attaches domains to it.
 
 ## Environments
 
@@ -52,7 +54,7 @@ module "some_new_app" {
 ```
 
 Onboarding a new app is then: add the module block here, copy
-`.github/workflows/deploy-dev.yml` with new inputs, and let the first CI deploy
+`.github/workflows/deploy-dev.yml` with new inputs, and let the first CI run
 create the Pages project.
 
 ## First run
@@ -60,9 +62,9 @@ create the Pages project.
 Ordering matters, because Terraform attaches domains to a project that must
 already exist:
 
-1. Merge to `main` so `deploy-dev.yml` runs. `wrangler` creates the
-   `fjconsulting-website-dev` Pages project and the site goes live on
-   `*.pages.dev`.
+1. Merge to `main` so `deploy-dev.yml` runs. The workflow creates the
+   `fjconsulting-website-dev` Pages project if it is missing, then deploys, and
+   the site goes live on `*.pages.dev`.
 2. Confirm the Terraform Cloud workspace is connected to this repo with working
    directory `infra/`, and that these workspace variables are set:
    - `account_id` (Terraform variable) — the Cloudflare account ID

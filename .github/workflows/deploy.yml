@@ -83,9 +83,68 @@ jobs:
           SITE_INDEXABLE: ${{ inputs.indexable }}
         run: node scripts/check-build.mjs
 
+      # `wrangler pages deploy` does NOT create a missing project in CI. Creating
+      # one is an interactive prompt, and with no TTY wrangler skips it and exits
+      # with "Project not found [code: 8000007]". The original design assumed the
+      # first deploy would create the project; it does not, so create it here.
+      #
+      # This keeps the ownership split intact — GitHub Actions still owns the
+      # project, Terraform still owns only DNS and domains, and there is still no
+      # create/create race — while making the workflow genuinely copy-pasteable
+      # for the next app onboarded under fjconsulting.dev.
+      #
+      # Idempotent: a 200 means it already exists and nothing is written.
+      - name: Ensure the Pages project exists
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects"
+
+          code=$(curl -sS -o /tmp/project.json -w '%{http_code}' --max-time 30 \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            "${api}/${PROJECT_NAME}")
+
+          if [ "$code" = "200" ]; then
+            echo "Pages project '${PROJECT_NAME}' already exists."
+            exit 0
+          fi
+
+          # Anything other than a clean 404 is a real problem — most likely a
+          # token missing Account > Cloudflare Pages > Edit. Fail loudly rather
+          # than trying to create over the top of it.
+          if [ "$code" != "404" ]; then
+            echo "::error::Unexpected HTTP $code looking up Pages project '${PROJECT_NAME}'."
+            cat /tmp/project.json
+            exit 1
+          fi
+
+          echo "Pages project '${PROJECT_NAME}' does not exist. Creating it."
+          code=$(curl -sS -o /tmp/create.json -w '%{http_code}' --max-time 30 \
+            -X POST \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "{\"name\":\"${PROJECT_NAME}\",\"production_branch\":\"main\"}" \
+            "${api}")
+
+          if [ "$code" != "200" ]; then
+            echo "::error::Failed to create Pages project '${PROJECT_NAME}' (HTTP $code)."
+            cat /tmp/create.json
+            exit 1
+          fi
+
+          echo "Created Pages project '${PROJECT_NAME}'."
+
       - name: Deploy to Cloudflare Pages
         id: deploy
-        uses: cloudflare/wrangler-action@v3
+        # v4 runs on Node 24 and, more importantly, defaults to Wrangler v4.
+        # v3 silently fell back to its bundled Wrangler 3.90.0, which is what
+        # ran here before. wranglerVersion is left unset deliberately: the
+        # default tracks Wrangler v4 latest. Pin it if a Wrangler release ever
+        # breaks a deploy.
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
