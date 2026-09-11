@@ -1,14 +1,11 @@
 name: CI
 
-# Quality gate for every change. Runs on pull requests and on main, and is the
-# same job the deploy workflows depend on, so nothing reaches an environment
-# without having passed here first.
+# Quality gate for every change. Runs on pull requests and on main.
 
 on:
   pull_request:
   push:
     branches: [main]
-  workflow_call:
 
 permissions:
   contents: read
@@ -48,10 +45,3 @@ jobs:
       # page would render blank, so assert the markup carries the real copy.
       - name: Verify built output
         run: node scripts/check-build.mjs
-
-      - name: Upload build
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7

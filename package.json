@@ -13,12 +13,10 @@
     "check": "node scripts/check-contrast.mjs && npm run build && node scripts/check-build.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:build": "node scripts/check-build.mjs",
-    "brand": "node scripts/build-brand-assets.mjs",
     "fonts:sync": "cp node_modules/@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2 node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2 public/fonts/"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
-    "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.1.1",
     "typescript": "^5.9.3"
   },

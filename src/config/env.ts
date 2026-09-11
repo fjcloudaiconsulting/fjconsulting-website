@@ -7,9 +7,7 @@
 
 /** The origin this build will be served from. Set by CI per environment. */
 export const siteUrl = (
-  import.meta.env.SITE_URL ??
-  process.env.SITE_URL ??
-  'https://fjconsulting.dev'
+  import.meta.env.SITE_URL ?? 'https://fjconsulting.dev'
 ).replace(/\/$/, '');
 
 /**
@@ -21,5 +19,4 @@ export const siteUrl = (
  * own name. CI asserts that a production build actually came out indexable, so
  * the safe default cannot silently suppress production.
  */
-export const indexable =
-  (import.meta.env.SITE_INDEXABLE ?? process.env.SITE_INDEXABLE) === 'true';
+export const indexable = import.meta.env.SITE_INDEXABLE === 'true';
