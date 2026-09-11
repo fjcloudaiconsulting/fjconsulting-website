@@ -115,10 +115,10 @@ The commit is the unit promoted, and the tag records exactly which one.
 **Next up**
 - [ ] Replace drafted About copy with Flamarion's real background (biggest
       credibility win available; everything else is polish)
-- [ ] Phase 3: contact form delivery (Pages Function → Mailgun, Turnstile +
-      honeypot). The honeypot field and the `formEnabled` flag are already in
-      place; flip `contact.formEnabled` in `src/data/site.ts` when the endpoint
-      is live
+- [ ] Phase 3: contact form (Pages Function → Mailgun, Turnstile + honeypot).
+      The contact section currently offers a direct `mailto:` and no form; the
+      form markup, the honeypot and the endpoint that reads them all land
+      together, so nothing ships that cannot be used
 - [ ] Decide Mailgun sending domain and destination inbox
 
 **Later**
