@@ -34,8 +34,8 @@ and completeness on every commit.
 
 `fjconsulting.dev` is the shared non-production estate for everything, not just
 this site. The apex and `dev.fjconsulting.dev` both serve this project; future
-apps get their own subdomain and reuse the same Terraform module and deploy
-workflow. There is no `www` host: the apex is the canonical origin.
+apps get their own subdomain and reuse the same Terraform resource pair and
+deploy workflow. There is no `www` host: the apex is the canonical origin.
 
 Promotion is **tag-triggered**: `main` flows continuously to dev, and a release
 is the deliberate act of tagging a commit already running there. The production
@@ -77,7 +77,6 @@ src/data/site.ts      All site copy, in one file
 src/styles/tokens.css Design tokens (colour, type, spacing, motion)
 scripts/              Verification and brand-asset tooling
 infra/                Terraform: DNS and Pages custom domains
-infra/modules/        Reusable pages-app module for future apps
 functions/api/        Cloudflare Pages Function for contact (Phase 3)
 .github/workflows/    CI, reusable deploy, dev and prod callers, terraform
 docs/                 Design spec and project status

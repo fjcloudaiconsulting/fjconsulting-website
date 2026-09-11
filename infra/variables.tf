@@ -3,8 +3,6 @@ variable "account_id" {
   type        = string
 }
 
-# ---- dev (fjconsulting.dev) -------------------------------------------------
-
 variable "dev_zone_name" {
   description = "Cloudflare zone for the non-production estate."
   type        = string
@@ -12,44 +10,18 @@ variable "dev_zone_name" {
 }
 
 variable "dev_project_name" {
-  description = "Cloudflare Pages project serving the dev site."
+  description = "Cloudflare Pages project serving the dev site. Created by CI, not by Terraform."
   type        = string
   default     = "fjconsulting-website-dev"
 }
 
 variable "dev_hostnames" {
-  description = "Hostnames bound to the dev Pages project."
+  description = "Hostnames bound to the dev Pages project. Apex is supported: Cloudflare flattens the CNAME."
   type        = list(string)
   default     = ["fjconsulting.dev", "dev.fjconsulting.dev"]
-}
 
-# ---- prod (fjconsulting.io) -------------------------------------------------
-
-variable "enable_prod" {
-  description = <<-EOT
-    Whether to manage the production estate. Keep false until fjconsulting.io
-    has been transferred to Cloudflare and its zone is active; the .io domain
-    currently hosts unrelated production services, so nothing should touch it
-    until the owner has moved it deliberately.
-  EOT
-  type        = bool
-  default     = false
-}
-
-variable "prod_zone_name" {
-  description = "Cloudflare zone for production."
-  type        = string
-  default     = "fjconsulting.io"
-}
-
-variable "prod_project_name" {
-  description = "Cloudflare Pages project serving the production site."
-  type        = string
-  default     = "fjconsulting-website-prod"
-}
-
-variable "prod_hostnames" {
-  description = "Hostnames bound to the production Pages project."
-  type        = list(string)
-  default     = ["fjconsulting.io", "www.fjconsulting.io"]
+  validation {
+    condition     = length(var.dev_hostnames) > 0
+    error_message = "At least one hostname is required."
+  }
 }

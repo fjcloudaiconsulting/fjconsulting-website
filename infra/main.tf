@@ -36,38 +36,46 @@ data "cloudflare_zone" "dev" {
   }
 }
 
-module "website_dev" {
-  source = "./modules/pages-app"
-
-  account_id   = var.account_id
-  zone_id      = data.cloudflare_zone.dev.zone_id
-  project_name = var.dev_project_name
-  hostnames    = var.dev_hostnames
-  environment  = "dev"
+locals {
+  # Cloudflare serves every Pages project at <project>.pages.dev. That is the
+  # CNAME target for each custom hostname.
+  dev_pages_hostname = "${var.dev_project_name}.pages.dev"
 }
 
 /*
- * fjconsulting.io — production.
+ * Deliberately absent: the Pages project itself.
  *
- * Gated behind enable_prod because the .io domain is still hosting unrelated
- * production services and has not been moved to Cloudflare yet. Flip the flag
- * once the zone is active; nothing else needs to change.
+ * It is created by the first deploy from CI, and Terraform adopts it. That
+ * avoids a create/create collision between CI and Terraform racing to own the
+ * same object, and keeps the ownership split clean — GitHub Actions owns
+ * deployments, Terraform owns how the world reaches them.
  */
-data "cloudflare_zone" "prod" {
-  count = var.enable_prod ? 1 : 0
 
-  filter = {
-    name = var.prod_zone_name
-  }
-}
-
-module "website_prod" {
-  count  = var.enable_prod ? 1 : 0
-  source = "./modules/pages-app"
+# Attaches the custom domains to the Pages project. Cloudflare issues and renews
+# the certificates once the matching DNS records below resolve.
+resource "cloudflare_pages_domain" "dev" {
+  for_each = toset(var.dev_hostnames)
 
   account_id   = var.account_id
-  zone_id      = data.cloudflare_zone.prod[0].zone_id
-  project_name = var.prod_project_name
-  hostnames    = var.prod_hostnames
-  environment  = "prod"
+  project_name = var.dev_project_name
+  name         = each.value
+}
+
+# Proxied CNAME. At the zone apex Cloudflare flattens the CNAME automatically,
+# so the same record shape works for both apex and subdomains.
+resource "cloudflare_dns_record" "dev" {
+  for_each = toset(var.dev_hostnames)
+
+  zone_id = data.cloudflare_zone.dev.zone_id
+  name    = each.value
+  type    = "CNAME"
+  content = local.dev_pages_hostname
+  proxied = true
+  # Proxied records must use ttl = 1, which Cloudflare reads as "automatic".
+  ttl     = 1
+  comment = "Managed by Terraform - ${var.dev_project_name}"
+
+  # The certificate cannot be issued until the record resolves, so create the
+  # binding first and let Cloudflare validate once DNS is in place.
+  depends_on = [cloudflare_pages_domain.dev]
 }
