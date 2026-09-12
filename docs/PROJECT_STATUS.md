@@ -20,8 +20,9 @@ working session.
 - ⏳ Phase 3 (contact delivery via Mailgun + Turnstile) not started.
 
 **Domain decision (2026-09-09):** the first published version lives on the
-`fjconsulting.dev` **apex**, with `dev.fjconsulting.dev` bound to the same Pages
-project. `www` is dropped. `.dev` remains non-production and keeps `noindex` +
+`fjconsulting.dev` **apex**. The `dev.` subdomain is deliberately not bound: it
+served a byte-identical copy of the apex, and the name is more useful pointed at
+something else. `www` is dropped. `.dev` remains non-production and keeps `noindex` +
 `Disallow`, so the site is live and shareable by link without competing with the
 future production site for the company's own name. `fjconsulting.io` is
 untouched and stays a separate, later exercise.
@@ -56,7 +57,7 @@ Nothing ships until these exist. Everything else is ready.
 2. Merge this PR. `deploy-dev.yml` runs, creates the `fjconsulting-website-dev`
    Pages project if missing, deploys, site is live on `*.pages.dev`.
 3. Connect the Terraform Cloud workspace and apply. `fjconsulting.dev` and
-   `dev.fjconsulting.dev` start serving.
+   starts serving.
 4. Review the live site, correct the drafted copy.
 
 Production is deliberately not part of this sequence, and no production
@@ -68,7 +69,7 @@ it actually deploys to.
 
 | | dev | prod (planned) |
 | --- | --- | --- |
-| Domain | `fjconsulting.dev`, `dev.fjconsulting.dev` | `fjconsulting.io` |
+| Domain | `fjconsulting.dev` | `fjconsulting.io` |
 | Pages project | `fjconsulting-website-dev` | `fjconsulting-website-prod` |
 | Trigger | push to `main` | push a `v*.*.*` tag |
 | Indexable | no (`noindex` + `Disallow`) | yes |

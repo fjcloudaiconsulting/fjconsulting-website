@@ -4,7 +4,13 @@ import '../styles/global.css';
 import { company, meta, services } from '../data/site';
 import { indexable } from '../config/env';
 
-const { title, description } = meta;
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+// Two callers now: index.astro takes the defaults, 404.astro overrides them.
+const { title = meta.title, description = meta.description } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImage = new URL('/og.png', Astro.site).href;

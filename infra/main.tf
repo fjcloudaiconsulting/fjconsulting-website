@@ -79,3 +79,21 @@ resource "cloudflare_dns_record" "dev" {
   # binding first and let Cloudflare validate once DNS is in place.
   depends_on = [cloudflare_pages_domain.dev]
 }
+
+/*
+ * Email address obfuscation, off.
+ *
+ * Cloudflare rewrites every mailto: in the HTML into a /cdn-cgi/l/
+ * email-protection link that only JavaScript can decode. The site's primary
+ * call to action is a mailto:, so with JS unavailable that link resolves to a
+ * Cloudflare 404 instead of the inbox.
+ *
+ * It also buys nothing here: the same address is published in clear text in
+ * the page's JSON-LD, in the footer, and on the KvK register. The obfuscation
+ * costs a working link and hides nothing.
+ */
+resource "cloudflare_zone_setting" "email_obfuscation" {
+  zone_id    = data.cloudflare_zone.dev.zone_id
+  setting_id = "email_obfuscation"
+  value      = "off"
+}
