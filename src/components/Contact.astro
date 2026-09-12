@@ -1,121 +1,20 @@
 ---
 import { contact, company } from '../data/site';
-
-const { formEnabled } = contact;
 ---
 
 <section class="section contact-section" id="contact">
-  <div class="shell contact">
-    <div class="contact__head" data-reveal>
+  <div class="shell">
+    <div class="contact" data-reveal>
       <h2>{contact.heading}</h2>
       <p class="lede">{contact.lede}</p>
 
-      <dl class="contact__direct">
-        <div>
-          <dt class="mono">Email</dt>
-          <dd>
-            <a class="link" href={`mailto:${company.email}`}>{company.email}</a>
-          </dd>
-        </div>
-        <div>
-          <dt class="mono">Based in</dt>
-          <dd>{company.address.city}, {company.address.country}</dd>
-        </div>
-      </dl>
-    </div>
+      <a class="btn btn--primary contact__cta" href={`mailto:${company.email}`}>
+        Email {company.email}
+      </a>
 
-    <div class="contact__form-wrap" data-reveal style="--reveal-delay: 90ms">
-      {
-        /*
-         * Phase 1 ships the form UI with delivery not yet wired. Rather than
-         * render a form that silently swallows messages, the fields are
-         * disabled and the working route is stated plainly. Flipping
-         * contact.formEnabled in src/data/site.ts once the Pages Function is
-         * live removes both the notice and the disabled state.
-         */
-      }
-      {
-        !formEnabled && (
-          <p class="notice">
-            <strong>The form is not connected yet.</strong> It goes live with the
-            next release. Until then, email{' '}
-            <a class="link" href={`mailto:${company.email}`}>
-              {company.email}
-            </a>{' '}
-            directly. It reaches me just as fast.
-          </p>
-        )
-      }
-
-      <form
-        class="form"
-        method="post"
-        action="/api/contact"
-        novalidate
-        aria-describedby={!formEnabled ? 'form-disabled-note' : undefined}
-      >
-        {
-          !formEnabled && (
-            <p id="form-disabled-note" class="visually-hidden">
-              This form is currently disabled. Please email {company.email} instead.
-            </p>
-          )
-        }
-
-        <div class="field">
-          <label for="name">Name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            autocomplete="name"
-            required
-            disabled={!formEnabled}
-          />
-        </div>
-
-        <div class="field">
-          <label for="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            required
-            disabled={!formEnabled}
-          />
-        </div>
-
-        <div class="field">
-          <label for="message">What can I help with?</label>
-          <textarea
-            id="message"
-            name="message"
-            rows="5"
-            required
-            disabled={!formEnabled}></textarea>
-        </div>
-
-        {
-          /* Honeypot. Hidden from sight and from assistive technology, and
-             never focusable, so only a bot fills it in. Present from Phase 1
-             so the Phase 3 endpoint has it from the first request. */
-        }
-        <div class="honeypot" aria-hidden="true">
-          <label for="company-website">Company website</label>
-          <input
-            id="company-website"
-            name="company_website"
-            type="text"
-            tabindex="-1"
-            autocomplete="off"
-          />
-        </div>
-
-        <button class="btn btn--primary form__submit" type="submit" disabled={!formEnabled}>
-          Send message
-        </button>
-      </form>
+      <p class="contact__note mono">
+        Based in {company.address.city}, {company.address.country}
+      </p>
     </div>
   </div>
 </section>
@@ -125,127 +24,29 @@ const { formEnabled } = contact;
     border-top: 1px solid var(--line);
   }
 
+  /* A single column at a reading measure. The section asks for one action, so
+     it is laid out as one column rather than split into a form beside it. */
   .contact {
-    display: grid;
-    gap: var(--s-7);
-    align-items: start;
+    max-width: 46rem;
   }
 
-  .contact__head h2 {
+  .contact h2 {
     max-width: 14ch;
   }
 
-  .contact__head .lede {
+  .contact .lede {
     margin-top: var(--s-4);
   }
 
-  .contact__direct {
-    display: grid;
-    gap: var(--s-4);
+  .contact__cta {
     margin-top: var(--s-6);
+  }
+
+  .contact__note {
+    margin-top: var(--s-5);
     padding-top: var(--s-5);
     border-top: 1px solid var(--line);
-  }
-
-  .contact__direct dt {
-    margin-bottom: 0.35rem;
-  }
-
-  .contact__direct dd {
-    margin: 0;
-    font-size: var(--t-md);
-    color: var(--ink);
-  }
-
-  .notice {
-    padding: var(--s-4);
-    margin-bottom: var(--s-5);
-    background: var(--gold-wash);
-    /* A full border, not a left stripe. */
-    border: 1px solid oklch(0.792 0.113 79 / 0.4);
-    border-radius: var(--r-md);
     font-size: var(--t-sm);
-    color: var(--ink);
-    line-height: 1.6;
-  }
-
-  .form {
-    display: grid;
-    gap: var(--s-5);
-  }
-
-  .field {
-    display: grid;
-    gap: 0.45rem;
-  }
-
-  /* Labels are always visible. Placeholder-as-label disappears the moment
-     someone starts typing, which is exactly when it is needed. */
-  .field label {
-    font-size: var(--t-sm);
-    font-weight: 500;
-    color: var(--ink);
-  }
-
-  .field input,
-  .field textarea {
-    width: 100%;
-    padding: 0.7rem 0.85rem;
-    background: var(--surface);
-    color: var(--ink);
-    border: 1px solid var(--line-strong);
-    border-radius: var(--r-md);
-    font-size: var(--t-base);
-    line-height: 1.5;
-    transition:
-      border-color var(--dur-fast) var(--ease-out),
-      background-color var(--dur-fast) var(--ease-out);
-  }
-
-  .field textarea {
-    resize: vertical;
-    min-height: 7rem;
-  }
-
-  .field input:hover:not(:disabled),
-  .field textarea:hover:not(:disabled) {
-    border-color: var(--ink-faint);
-  }
-
-  .field input:focus-visible,
-  .field textarea:focus-visible {
-    border-color: var(--gold);
-    background: var(--surface-hi);
-  }
-
-  .field input:disabled,
-  .field textarea:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  .honeypot {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  .form__submit {
-    justify-self: start;
-  }
-
-  .form__submit:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  @media (min-width: 54rem) {
-    .contact {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-      gap: var(--s-8);
-    }
+    color: var(--ink-muted);
   }
 </style>
