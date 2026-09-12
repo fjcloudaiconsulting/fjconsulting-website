@@ -125,10 +125,4 @@ export const about = {
 export const contact = {
   heading: 'Start a conversation',
   lede: 'Tell me what you are building or what is currently breaking. I read every message and reply personally, usually within a working day.',
-  /**
-   * Phase 1 ships the form UI with delivery stubbed; the Pages Function that
-   * posts to Mailgun arrives in Phase 3. Flip this to true when the endpoint at
-   * functions/api/contact.ts is live.
-   */
-  formEnabled: false,
 } as const;
