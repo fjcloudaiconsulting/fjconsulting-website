@@ -61,9 +61,33 @@ already exist:
 3. Let the VCS-driven plan run and apply it. DNS and the custom domain binding
    appear, and `fjconsulting.dev` starts serving.
 
-The Cloudflare API token for Terraform needs **Zone: DNS Edit**, **Zone: Zone
-Read**, and **Account: Cloudflare Pages Edit**. The token CI uses is narrower:
-**Account: Cloudflare Pages Edit** only.
+## Cloudflare API tokens
+
+Two tokens, two holders. They are separate token objects: rolling or editing one
+to serve both purposes invalidates it for the other holder, which presents as a
+`401` / `code 10000` at the consumer that was not updated.
+
+Cloudflare tokens have no description field, so the name has to carry the
+meaning. Name them after **who holds the token**, because that is the question
+being asked when one is revoked or rotated.
+
+| Token | Held by | Permissions | Breaks if revoked |
+| --- | --- | --- | --- |
+| `fjconsulting-website-github-actions` | GitHub Actions, repo secret `CLOUDFLARE_API_TOKEN` | Account · Cloudflare Pages · **Edit** (Entire Account) | Deploys |
+| `fjconsulting-website-terraform-cloud` | Terraform Cloud workspace `FlamaCorp/fjconsulting-website`, env var `CLOUDFLARE_API_TOKEN`, sensitive | Account · Cloudflare Pages · **Edit** (Entire Account)<br>Zone · DNS · **Edit** (`fjconsulting.dev`)<br>Zone · Zone · **Read** (`fjconsulting.dev`)<br>Zone · Zone Settings · **Edit** (`fjconsulting.dev`) | DNS, custom domains, zone settings |
+
+Two things that cost time when they were first set up:
+
+- The DNS, Zone and Zone Settings rows do not appear in the permission dropdown
+  while the scope is set to **Entire Account**. Switch the scope selector to
+  **Specific zone → fjconsulting.dev** first, then search for them.
+- Zone Settings Edit is what `cloudflare_zone_setting` needs. Without it the
+  zone settings resources fail at apply with a 403 while everything else in the
+  plan succeeds.
+
+Do not validate these tokens with `/user/tokens/verify`: it only validates
+user-owned tokens and reports failure for a perfectly good account-owned one
+(the kind prefixed `cfat_`). Verify by exercising the capabilities instead.
 
 ## Local checks
 
@@ -90,7 +114,7 @@ Two workspace variables are required before the first run:
 | Variable | Kind | Notes |
 | --- | --- | --- |
 | `account_id` | Terraform | Cloudflare account ID |
-| `CLOUDFLARE_API_TOKEN` | Environment, **sensitive** | Needs Zone: DNS Edit, Zone: Zone Read, Account: Pages Edit |
+| `CLOUDFLARE_API_TOKEN` | Environment, **sensitive** | See the token table below |
 
 Nothing here is imported. The Pages project is created by CI and deliberately
 not declared; every resource Terraform does declare — the DNS records and the

@@ -33,7 +33,8 @@ Nothing ships until these exist. Everything else is ready.
 
 ### 1. GitHub repository secrets (blocks the first deploy)
 
-- [ ] `CLOUDFLARE_API_TOKEN` — scope **Account → Cloudflare Pages: Edit**
+- [ ] `CLOUDFLARE_API_TOKEN` — token `fjconsulting-website-github-actions`,
+      scope **Account → Cloudflare Pages: Edit**
 - [ ] `CLOUDFLARE_ACCOUNT_ID` — Cloudflare dashboard, right sidebar
 
 ### 2. GitHub Environments
@@ -49,7 +50,9 @@ Nothing ships until these exist. Everything else is ready.
       `fjconsulting-website` (the org guess of `fjconsulting` was wrong)
 - [ ] Workspace variable `account_id` (Terraform variable)
 - [ ] Workspace variable `CLOUDFLARE_API_TOKEN` (environment, **sensitive**) —
-      needs **Zone: DNS Edit**, **Zone: Zone Read**, **Account: Pages Edit**
+      token `fjconsulting-website-terraform-cloud`, needs **Account: Pages
+      Edit**, **Zone: DNS Edit**, **Zone: Zone Read** and **Zone: Zone Settings
+      Edit**. See the token table in `infra/README.md`.
 
 ## Order of operations for going live
 
