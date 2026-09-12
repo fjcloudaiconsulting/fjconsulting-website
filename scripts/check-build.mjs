@@ -87,6 +87,24 @@ check(
   })(),
 );
 
+/* ---- contact form -------------------------------------------------------- */
+
+// The form needs JavaScript to submit, so the mailto: beside it is the only
+// route for a visitor without it — and the honeypot is the only spam guard
+// until Turnstile is provisioned. Both are easy to lose in a refactor.
+check(
+  'contact form posts to the Pages Function',
+  html.includes('action="/api/contact"'),
+);
+for (const field of ['name="name"', 'name="email"', 'name="message"']) {
+  check(`contact form has ${field}`, html.includes(field));
+}
+check('honeypot field present', html.includes('name="company_url"'));
+check(
+  'mailto fallback survives alongside the form',
+  html.includes(`mailto:${'info@fjconsulting.io'}`),
+);
+
 /* ---- environment addressing --------------------------------------------- */
 
 const expectedSite = process.env.SITE_URL;

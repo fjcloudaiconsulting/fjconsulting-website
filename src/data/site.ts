@@ -125,4 +125,43 @@ export const about = {
 export const contact = {
   heading: 'Start a conversation',
   lede: 'Tell me what you are building or what is currently breaking. I read every message and reply personally, usually within a working day.',
+
+  /**
+   * The form needs JavaScript to submit; the mailto: below it does not, and is
+   * also the honest answer for anyone who would rather not fill in a form.
+   */
+  form: {
+    fields: {
+      name: { label: 'Name', autocomplete: 'name' },
+      email: { label: 'Email', autocomplete: 'email' },
+      message: {
+        label: 'What are you working on?',
+        hint: 'A couple of sentences is plenty.',
+      },
+    },
+    submit: 'Send message',
+    submitting: 'Sending…',
+    /**
+     * What happens to the data, in one sentence. The form collects personal
+     * data from EU visitors, so saying where it goes is the minimum.
+     */
+    privacy:
+      'Your message is emailed to me and nowhere else. No tracking, no mailing list, no third-party analytics.',
+    success: {
+      heading: 'Message sent.',
+      body: 'Thanks — it is in my inbox. I usually reply within a working day.',
+    },
+    /** Keyed by the error codes functions/api/contact.js returns. */
+    errors: {
+      invalid: 'Please check the fields above and try again.',
+      challenge_failed:
+        'The spam check did not complete. Reload the page and try once more.',
+      not_configured:
+        'The form is not accepting messages yet. Please email me directly instead.',
+      send_failed:
+        'Something went wrong sending that. Please email me directly instead.',
+    },
+  },
+
+  fallbackLabel: 'Or email directly',
 } as const;

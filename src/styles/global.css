@@ -64,6 +64,14 @@ button {
   cursor: pointer;
 }
 
+/* The UA rule for [hidden] is display: none, and any author display
+   declaration outranks it — so an element styled display: grid or flex stays
+   on screen when hidden is set. This is what keeps the contact form actually
+   disappearing when it is replaced by the sent confirmation. */
+[hidden] {
+  display: none !important;
+}
+
 ul[role='list'],
 ol[role='list'] {
   list-style: none;

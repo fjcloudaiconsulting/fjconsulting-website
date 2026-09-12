@@ -37,6 +37,11 @@ jobs:
       - name: Verify colour contrast
         run: node scripts/check-contrast.mjs
 
+      # The contact Pages Function is deployed raw and never enters the Astro
+      # build, so nothing else here would notice if it broke.
+      - name: Unit tests
+        run: npm test
+
       - name: Type-check and build
         run: npm run build
 
