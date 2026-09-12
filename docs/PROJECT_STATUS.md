@@ -59,30 +59,32 @@ Nothing ships until these exist. Everything else is ready.
    `dev.fjconsulting.dev` start serving.
 4. Review the live site, correct the drafted copy.
 
-Production is deliberately not part of this sequence. `deploy-prod.yml` only
-fires on a `v*.*.*` tag, and no tag should be pushed until `fjconsulting.io` has
-moved to Cloudflare and `enable_prod` has been flipped in Terraform. Until then
-the whole estate is the `.dev` zone.
+Production is deliberately not part of this sequence, and no production
+pipeline exists yet. The whole estate is the `.dev` zone until `fjconsulting.io`
+moves to Cloudflare; the prod workflow is written then, against the environment
+it actually deploys to.
 
 ## Environments and promotion
 
-| | dev | prod |
+| | dev | prod (planned) |
 | --- | --- | --- |
 | Domain | `fjconsulting.dev`, `dev.fjconsulting.dev` | `fjconsulting.io` |
 | Pages project | `fjconsulting-website-dev` | `fjconsulting-website-prod` |
 | Trigger | push to `main` | push a `v*.*.*` tag |
 | Indexable | no (`noindex` + `Disallow`) | yes |
 
-**Promotion model: tag-triggered.** `main` flows continuously to dev. A release
-is the deliberate act of tagging a commit that has already been running there.
-The prod workflow refuses tags on commits that are not ancestors of `main`, so
-nothing can reach production without having been merged and deployed to dev
-first.
+Only the dev column exists today. The prod column is the intended shape, not
+shipped configuration.
 
-Note: dev and prod are **rebuilt from the same commit** rather than promoting
-one binary artifact. Canonical URLs, Open Graph tags, `robots.txt` and the
-sitemap all carry the origin, so the artifact is genuinely environment-specific.
-The commit is the unit promoted, and the tag records exactly which one.
+**Planned promotion model: tag-triggered.** `main` flows continuously to dev. A
+release is the deliberate act of tagging a commit that has already been running
+there, and the prod workflow should refuse tags on commits that are not
+ancestors of `main`.
+
+Note: dev and prod are to be **rebuilt from the same commit** rather than
+promoting one binary artifact. Canonical URLs, Open Graph tags and `robots.txt`
+all carry the origin, so the artifact is genuinely environment-specific. The
+commit is the unit promoted, and the tag records exactly which one.
 
 ## Reusability for future apps
 

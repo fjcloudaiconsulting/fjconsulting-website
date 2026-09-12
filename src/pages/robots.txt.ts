@@ -1,12 +1,12 @@
 import type { APIRoute } from 'astro';
-import { indexable, siteUrl } from '../config/env';
+import { indexable } from '../config/env';
 
 export const prerender = true;
 
 /**
- * robots.txt is generated rather than served as a static file so that the
- * sitemap URL follows the environment, and so non-production deployments
- * actively disallow crawling instead of quietly competing with the real site.
+ * robots.txt is generated rather than served as a static file so that
+ * non-production deployments actively disallow crawling instead of quietly
+ * competing with the real site.
  */
 export const GET: APIRoute = () => {
   const body = indexable
@@ -26,8 +26,6 @@ export const GET: APIRoute = () => {
         '',
         'User-agent: Google-Extended',
         'Allow: /',
-        '',
-        `Sitemap: ${siteUrl}/sitemap-index.xml`,
         '',
       ].join('\n')
     : [

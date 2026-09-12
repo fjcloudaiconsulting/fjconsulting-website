@@ -4,12 +4,7 @@ import '../styles/global.css';
 import { company, meta, services } from '../data/site';
 import { indexable } from '../config/env';
 
-interface Props {
-  title?: string;
-  description?: string;
-}
-
-const { title = meta.title, description = meta.description } = Astro.props;
+const { title, description } = meta;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImage = new URL('/og.png', Astro.site).href;

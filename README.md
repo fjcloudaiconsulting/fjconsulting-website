@@ -37,9 +37,10 @@ this site. The apex and `dev.fjconsulting.dev` both serve this project; future
 apps get their own subdomain and reuse the same Terraform module and deploy
 workflow. There is no `www` host: the apex is the canonical origin.
 
-Promotion is **tag-triggered**: `main` flows continuously to dev, and a release
-is the deliberate act of tagging a commit already running there. The production
-workflow refuses tags on commits that are not ancestors of `main`.
+Promotion is planned as **tag-triggered**: `main` flows continuously to dev, and
+a release is the deliberate act of tagging a commit already running there. Only
+the dev half exists today — the production workflow is written when
+`fjconsulting.io` moves to Cloudflare, against the environment it deploys to.
 
 ## Local development
 
@@ -63,11 +64,13 @@ cannot drift from the real palette.
 ### Brand assets
 
 `public/og.png`, the favicons and the logo masks are all derived from one source
-logo and committed. Regenerate them only if the logo changes:
+logo and committed, so nothing in the build regenerates them.
 
-```bash
-node scripts/build-brand-assets.mjs path/to/logo.png
-```
+The generator that produced them has been removed: it carried its own 215-line
+PNG codec, and its source logo no longer exists on disk, so it could not be run
+or verified. When the logo next changes, regenerate the masks and rasters with
+`sharp` (already present as an Astro dependency) — roughly forty lines. The
+previous implementation is in git history if it is wanted as a reference.
 
 ## Repository layout
 
@@ -75,11 +78,11 @@ node scripts/build-brand-assets.mjs path/to/logo.png
 /                     Astro site (src/, public/, astro.config.mjs)
 src/data/site.ts      All site copy, in one file
 src/styles/tokens.css Design tokens (colour, type, spacing, motion)
-scripts/              Verification and brand-asset tooling
+scripts/              Build and accessibility verification
 infra/                Terraform: DNS and Pages custom domains
 infra/modules/        Reusable pages-app module for future apps
 functions/api/        Cloudflare Pages Function for contact (Phase 3)
-.github/workflows/    CI, reusable deploy, dev and prod callers, terraform
+.github/workflows/    CI, reusable deploy, dev caller, terraform
 docs/                 Design spec and project status
 ```
 

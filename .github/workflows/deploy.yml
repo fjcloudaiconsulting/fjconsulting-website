@@ -1,11 +1,11 @@
 name: Deploy
 
-# Reusable deploy job. Not triggered directly: deploy-dev.yml and
-# deploy-prod.yml call it with different inputs.
+# Reusable deploy job. Not triggered directly: deploy-dev.yml calls it with
+# its inputs, and a prod caller joins it when fjconsulting.io moves.
 #
 # This is the piece meant to be copied for the next app onboarded under
 # fjconsulting.dev. Everything environment-specific arrives as an input, so a
-# new project needs its own caller workflows and a Terraform module block,
+# new project needs its own caller workflow and its own DNS resources,
 # not a new pipeline.
 
 on:
@@ -67,7 +67,7 @@ jobs:
         run: node scripts/check-contrast.mjs
 
       # The build is environment-specific by design: canonical URLs, Open Graph
-      # tags, the sitemap and robots.txt all carry the origin. That means dev
+      # tags and robots.txt all carry the origin. That means dev
       # and prod are rebuilt from the same commit rather than promoting one
       # binary artifact. The commit is the thing promoted, and the tag records
       # exactly which one.

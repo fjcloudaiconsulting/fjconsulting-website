@@ -9,7 +9,7 @@
  *     confirms it can animate it back, so a mistake there ships a page that is
  *     blank to anything that does not run JS. Checking the copy is present in
  *     the static HTML is the guard.
- *  2. Wrong-environment URLs. Canonical, Open Graph and sitemap URLs come from
+ *  2. Wrong-environment URLs. Canonical and Open Graph URLs come from
  *     SITE_URL. If CI forgets to set it, the dev build would advertise itself
  *     as production (or the reverse) and split search-engine signals.
  *
@@ -124,7 +124,6 @@ const robotsTxt = existsSync(join(distDir, 'robots.txt'))
 if (wantsIndexing) {
   check('production build is indexable', robotsMeta.includes('index') && !robotsMeta.includes('noindex'), `robots meta="${robotsMeta}"`);
   check('robots.txt allows crawling', robotsTxt.includes('Allow: /') && !robotsTxt.includes('Disallow: /'));
-  check('robots.txt advertises the sitemap', robotsTxt.includes('Sitemap:'));
 } else {
   check('non-production build is noindex', robotsMeta.includes('noindex'), `robots meta="${robotsMeta}"`);
   check('robots.txt disallows crawling', robotsTxt.includes('Disallow: /'));
@@ -137,7 +136,6 @@ for (const asset of [
   'favicon-32.png',
   'apple-touch-icon.png',
   'robots.txt',
-  'sitemap-index.xml',
   'fonts/archivo-latin-wght-normal.woff2',
   'fonts/ibm-plex-mono-latin-400-normal.woff2',
 ]) {
