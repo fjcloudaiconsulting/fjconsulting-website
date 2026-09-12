@@ -47,20 +47,22 @@ The site itself doubles as a live demo of the company's Cloud/IaC practice.
 
 ## Phased delivery
 
-1. **Phase 1 — Site live on `*.pages.dev`.** Full brand + content, contact-form UI
-   with delivery stubbed. No DNS/email dependency. *First deliverable.*
-2. **Phase 2 — IaC + custom domain.** Terraform Cloud provisions the zone/DNS and
-   binds `fjconsulting.dev`.
-3. **Phase 3 — Contact form delivery.** Pages Function → Mailgun, plus Cloudflare
+1. ✅ **Phase 1 — Site live.** Full brand + content. Shipped.
+2. ✅ **Phase 2 — IaC + custom domain.** Terraform Cloud manages DNS, the Pages
+   custom domain and zone settings. **Live at `https://fjconsulting.dev`** (apex
+   only) since 2026-09-12.
+3. ⏳ **Phase 3 — Contact form.** Pages Function → Mailgun, plus Cloudflare
    Turnstile + honeypot spam protection. Email destination/sending domain TBD.
+   Until then the contact section offers a direct `mailto:` and no form: the
+   markup, the honeypot and the endpoint that reads them land together.
 
-## Planned repository layout
+## Repository layout
 
 ```
 /                    Astro site (src/, public/, astro.config.mjs, package.json)
 functions/api/       Cloudflare Pages Function for contact (Phase 3)
-infra/               Terraform (Cloudflare zone, DNS, Pages project) (Phase 2)
-.github/workflows/   deploy.yml (build + deploy to Pages)
+infra/               Terraform (DNS, Pages custom domain, zone settings)
+.github/workflows/   ci.yml, deploy.yml (reusable), deploy-dev.yml, terraform.yml
 docs/                design spec, project status
 ```
 
@@ -68,9 +70,15 @@ docs/                design spec, project status
 
 Navy `#131A2B` background (deeper `#0E1420` for depth), gold gradient accent
 `#F3D488 → #D9A441`, white text `#F5F7FA`, muted `#9AA4B8`. Dark theme, premium /
-senior-consulting feel. Logo source: `/Users/flamarion/Downloads/fjconsulting.png`.
+senior-consulting feel.
 
-## Development commands *(available once the site is scaffolded in Phase 1)*
+The brand rasters (`public/og.png`, the favicons, the logo masks in `src/assets/`)
+are committed and nothing in the build regenerates them. The generator was removed
+in PR #8 — it carried its own PNG codec and its source logo no longer exists on
+disk. To change the logo, regenerate them with `sharp` (already an Astro
+dependency); the deleted script is in git history for reference.
+
+## Development commands
 
 ```bash
 npm install
