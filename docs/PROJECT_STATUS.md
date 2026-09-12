@@ -1,6 +1,6 @@
 # Project Status — FJ Cloud & AI Consulting Website
 
-_Last updated: 2026-09-09_
+_Last updated: 2026-09-12_
 
 Single source of truth for **where we left off**. Update it at the end of each
 working session.
@@ -9,14 +9,15 @@ working session.
 
 - ✅ Requirements, design spec, repo rules and conventions on `main` (PRs #1, #2 merged).
 - ✅ **`fjconsulting.dev` zone is live on Cloudflare.** The transfer completed.
-- ✅ **Phase 1 built.** Astro static site, full brand, all sections, contact-form
-  UI with delivery stubbed. Verified across 320–1600px, WCAG 2.2 AA contrast
-  asserted in CI.
-- ✅ **CI/CD built.** Reusable deploy workflow, dev on merge to `main`,
-  production on SemVer tag.
-- ✅ **Phase 2 IaC written.** Terraform Cloud config for the `.dev` estate,
-  validated against Cloudflare provider 5.22.
-- ⏳ **Not yet deployed.** Blocked only on repository secrets (see below).
+- ✅ **Phase 1 built.** Astro static site, full brand, all sections. The contact
+  section offers a direct `mailto:`; there is no form until Phase 3 can deliver
+  one. Verified across 320–1600px, WCAG 2.2 AA contrast asserted in CI.
+- ✅ **CI/CD built.** Reusable deploy workflow, dev on merge to `main`. No
+  production pipeline yet; it is written when `fjconsulting.io` moves.
+- ✅ **Phase 2 applied.** Terraform Cloud manages the apex DNS record, the Pages
+  custom domain and the zone's email-obfuscation setting.
+- ✅ **LIVE at https://fjconsulting.dev** (2026-09-12). Apex only, valid TLS,
+  `noindex` + `Disallow` as intended. Unknown paths return a real 404.
 - ⏳ Phase 3 (contact delivery via Mailgun + Turnstile) not started.
 
 **Domain decision (2026-09-09):** the first published version lives on the
@@ -27,46 +28,21 @@ something else. `www` is dropped. `.dev` remains non-production and keeps `noind
 future production site for the company's own name. `fjconsulting.io` is
 untouched and stays a separate, later exercise.
 
-## Blocking: what the owner must do
+## Setup, now complete
 
-Nothing ships until these exist. Everything else is ready.
+Kept as a record of what the live estate depends on.
 
-### 1. GitHub repository secrets (blocks the first deploy)
+- [x] GitHub secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+- [x] GitHub environment `dev`. `prod` deliberately not created; add it, with a
+      required-reviewer rule, only when `fjconsulting.io` is ready
+- [x] Terraform Cloud workspace `FlamaCorp/fjconsulting-website`, VCS-driven,
+      working directory `infra/`, both variables set
+- [x] Two Cloudflare API tokens, one per consumer. Names, permissions and the
+      traps involved are documented in `infra/README.md`
 
-- [ ] `CLOUDFLARE_API_TOKEN` — token `fjconsulting-website-github-actions`,
-      scope **Account → Cloudflare Pages: Edit**
-- [ ] `CLOUDFLARE_ACCOUNT_ID` — Cloudflare dashboard, right sidebar
-
-### 2. GitHub Environments
-
-- [ ] Create environment `dev` (no protection needed)
-- [ ] `prod` is not needed yet. Create it, with a **required reviewer**
-      protection rule, only when `fjconsulting.io` is ready to be released to.
-
-### 3. Terraform Cloud (blocks the custom domain, not the site)
-
-- [ ] VCS-driven workspace connected to this repo, working directory `infra/`
-- [x] Org/workspace confirmed: organization `FlamaCorp`, workspace
-      `fjconsulting-website` (the org guess of `fjconsulting` was wrong)
-- [ ] Workspace variable `account_id` (Terraform variable)
-- [ ] Workspace variable `CLOUDFLARE_API_TOKEN` (environment, **sensitive**) —
-      token `fjconsulting-website-terraform-cloud`, needs **Account: Pages
-      Edit**, **Zone: DNS Edit**, **Zone: Zone Read** and **Zone: Zone Settings
-      Edit**. See the token table in `infra/README.md`.
-
-## Order of operations for going live
-
-1. Add the two GitHub secrets.
-2. Merge this PR. `deploy-dev.yml` runs, creates the `fjconsulting-website-dev`
-   Pages project if missing, deploys, site is live on `*.pages.dev`.
-3. Connect the Terraform Cloud workspace and apply. `fjconsulting.dev` and
-   starts serving.
-4. Review the live site, correct the drafted copy.
-
-Production is deliberately not part of this sequence, and no production
-pipeline exists yet. The whole estate is the `.dev` zone until `fjconsulting.io`
-moves to Cloudflare; the prod workflow is written then, against the environment
-it actually deploys to.
+Going live took, in order: the two GitHub secrets, merge to `main` to deploy,
+then a manually queued Terraform run to bind the apex. `queue-all-runs` is off,
+so the first run of any new workspace must be queued deliberately.
 
 ## Environments and promotion
 
