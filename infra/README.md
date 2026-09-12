@@ -89,8 +89,20 @@ terraform -chdir=infra validate
 Plan and apply are intentionally not run locally. Terraform Cloud is the only
 thing that should hold state.
 
-## Confirm before the first apply
+## Terraform Cloud
 
-The `cloud` block in `main.tf` assumes a Terraform Cloud organization named
-`fjconsulting` and a workspace named `fjconsulting-website`. Correct those to
-match the real organization before the first run.
+The `cloud` block in `main.tf` points at organization `FlamaCorp`, workspace
+`fjconsulting-website` — a VCS-driven workspace on this repository with working
+directory `infra/`, matching the convention the other workspaces in that org
+already follow.
+
+Two workspace variables are required before the first run:
+
+| Variable | Kind | Notes |
+| --- | --- | --- |
+| `account_id` | Terraform | Cloudflare account ID |
+| `CLOUDFLARE_API_TOKEN` | Environment, **sensitive** | Needs Zone: DNS Edit, Zone: Zone Read, Account: Pages Edit |
+
+Nothing here is imported. The Pages project is created by CI and deliberately
+not declared; every resource Terraform does declare — the DNS records and the
+custom-domain bindings — is created by Terraform from scratch.

@@ -11,7 +11,7 @@ terraform {
   # State lives in Terraform Cloud (VCS-driven workspace, working directory
   # `infra/`). Nothing is stored in the repository.
   cloud {
-    organization = "fjconsulting"
+    organization = "FlamaCorp"
 
     workspaces {
       name = "fjconsulting-website"

@@ -44,8 +44,8 @@ Nothing ships until these exist. Everything else is ready.
 ### 3. Terraform Cloud (blocks the custom domain, not the site)
 
 - [ ] VCS-driven workspace connected to this repo, working directory `infra/`
-- [ ] Confirm the org/workspace names in `infra/main.tf` match reality
-      (currently assumes org `fjconsulting`, workspace `fjconsulting-website`)
+- [x] Org/workspace confirmed: organization `FlamaCorp`, workspace
+      `fjconsulting-website` (the org guess of `fjconsulting` was wrong)
 - [ ] Workspace variable `account_id` (Terraform variable)
 - [ ] Workspace variable `CLOUDFLARE_API_TOKEN` (environment, **sensitive**) —
       needs **Zone: DNS Edit**, **Zone: Zone Read**, **Account: Pages Edit**
