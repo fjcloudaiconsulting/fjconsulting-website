@@ -20,3 +20,13 @@ export const siteUrl = (
  * the safe default cannot silently suppress production.
  */
 export const indexable = import.meta.env.SITE_INDEXABLE === 'true';
+
+/**
+ * Cloudflare Turnstile site key. Public by design — it is rendered into the
+ * page — so it arrives as a build-time variable rather than a secret.
+ *
+ * Empty is a supported state: the form then ships with the honeypot alone and
+ * the endpoint does not enforce a challenge, so the form works before the
+ * widget is provisioned and hardens the moment the key and its secret are set.
+ */
+export const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';

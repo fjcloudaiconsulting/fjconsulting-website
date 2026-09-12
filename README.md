@@ -8,9 +8,11 @@ The site doubles as a working demonstration of the practice it sells. It is
 statically built, provisioned as code, deployed by CI, and verified for contrast
 and completeness on every commit.
 
-> **Status:** Phase 1 and 2 are built and waiting on credentials to deploy.
-> See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for exactly what the
-> owner needs to add and in what order.
+> **Status:** live at <https://fjconsulting.dev>. Phases 1 and 2 are done. The
+> Phase 3 contact endpoint is built and deployed but dormant: it answers
+> `503 not_configured` until the Mailgun credentials are set, and the page keeps
+> a plain `mailto:` beside the form meanwhile. See
+> [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the exact steps left.
 
 ## Tech stack
 
@@ -22,7 +24,7 @@ and completeness on every commit.
 | Hosting | [Cloudflare Pages](https://pages.cloudflare.com), one project per environment |
 | Infrastructure | [Terraform Cloud](https://app.terraform.io), VCS-driven |
 | CI/CD | GitHub Actions, reusable workflow called per environment |
-| Contact form | Cloudflare Pages Function → Mailgun *(Phase 3)* |
+| Contact form | Cloudflare Pages Function → Mailgun, Turnstile + honeypot |
 
 ## Environments
 
@@ -53,12 +55,40 @@ npm run preview  # serve the production build
 ### Verification
 
 ```bash
+npm test                          # node:test fences over the contact function
 node scripts/check-contrast.mjs   # WCAG 2.2 AA assertions over the colour tokens
 node scripts/check-build.mjs      # built HTML is complete and correctly addressed
+npm run check                     # all three, plus the build
 ```
 
-Both run in CI. The contrast check reads `src/styles/tokens.css` directly, so it
-cannot drift from the real palette.
+All three run in CI. The contrast check reads `src/styles/tokens.css` directly,
+so it cannot drift from the real palette. The deploy workflow additionally POSTs
+an empty body to `/api/contact` and requires a 400, which is the only thing that
+proves the Pages Function actually deployed rather than silently 404ing.
+
+### The contact endpoint
+
+`functions/api/contact.js` is deployed by Cloudflare alongside `dist/`; it is not
+part of the Astro build. To run it locally against the real Workers runtime:
+
+```bash
+npm run build
+npx wrangler pages dev dist          # http://localhost:8788
+```
+
+Put local secrets in `.dev.vars` (gitignored) to exercise delivery:
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `MAILGUN_API_KEY` | yes | Secret. |
+| `MAILGUN_DOMAIN` | yes | The verified Mailgun sending domain. |
+| `CONTACT_TO` | yes | Destination inbox. |
+| `MAILGUN_API_BASE` | no | Defaults to the EU region; a US-region domain needs `https://api.mailgun.net/v3`. |
+| `TURNSTILE_SECRET_KEY` | no | When unset, the challenge is not enforced and the honeypot is the only guard. |
+
+The public Turnstile site key is a build-time value, not a secret: it is the
+GitHub repository variable `TURNSTILE_SITE_KEY`, baked in as
+`PUBLIC_TURNSTILE_SITE_KEY`.
 
 ### Brand assets
 
@@ -79,7 +109,7 @@ src/data/site.ts      All site copy, in one file
 src/styles/tokens.css Design tokens (colour, type, spacing, motion)
 scripts/              Build and accessibility verification
 infra/                Terraform: DNS and Pages custom domains
-functions/api/        Cloudflare Pages Function for contact (Phase 3)
+functions/api/        Cloudflare Pages Function for contact
 .github/workflows/    CI, reusable deploy, dev caller, terraform
 docs/                 Design spec and project status
 ```

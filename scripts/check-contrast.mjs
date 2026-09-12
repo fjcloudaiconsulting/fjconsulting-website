@@ -135,6 +135,12 @@ const PAIRS = [
   ['gold', 'bg', 3, 'focus ring against page background'],
   ['gold', 'surface', 3, 'focus ring against raised surface'],
   ['line-strong', 'bg', 1.9, 'structural hairline against page background'],
+  ['field-line', 'surface', 3, 'form-field border against the field it encloses'],
+  ['ink-faint', 'surface', 3, 'hovered form-field border against the field'],
+
+  // Form status text. Both sit in the contact panel.
+  ['danger', 'bg', 4.5, 'form error text on page background'],
+  ['ok', 'surface', 4.5, 'sent-confirmation heading on raised surface'],
 
   // The raised surface must be distinguishable from the page field.
   ['surface', 'bg', 1.15, 'raised surface against page background'],

@@ -10,7 +10,8 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "node scripts/check-contrast.mjs && npm run build && node scripts/check-build.mjs",
+    "test": "node --test scripts/*.test.mjs",
+    "check": "npm test && node scripts/check-contrast.mjs && npm run build && node scripts/check-build.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:build": "node scripts/check-build.mjs",
     "fonts:sync": "cp node_modules/@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2 node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2 public/fonts/"

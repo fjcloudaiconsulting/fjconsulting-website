@@ -1,45 +1,226 @@
 ---
 import { contact, company } from '../data/site';
+import { turnstileSiteKey } from '../config/env';
+
+const { form } = contact;
+const { fields } = form;
 ---
 
 <section class="section contact-section" id="contact">
-  <div class="shell">
-    <div class="contact" data-reveal>
+  <div class="shell contact">
+    <div class="contact__intro" data-reveal>
       <h2>{contact.heading}</h2>
       <p class="lede">{contact.lede}</p>
 
-      <a class="btn btn--primary contact__cta" href={`mailto:${company.email}`}>
-        Email {company.email}
-      </a>
+      <p class="contact__fallback">
+        <span class="mono">{contact.fallbackLabel}</span>
+        <a class="link" href={`mailto:${company.email}`}>{company.email}</a>
+      </p>
 
       <p class="contact__note mono">
         Based in {company.address.city}, {company.address.country}
       </p>
     </div>
+
+    <div class="contact__panel" data-reveal style="--reveal-delay: 80ms">
+      <form
+        class="form"
+        id="contact-form"
+        action="/api/contact"
+        method="post"
+        data-copy={JSON.stringify({ errors: form.errors, submitting: form.submitting })}
+      >
+        <div class="field">
+          <label class="mono" for="cf-name">{fields.name.label}</label>
+          <input
+            id="cf-name"
+            name="name"
+            type="text"
+            required
+            maxlength="100"
+            autocomplete={fields.name.autocomplete}
+          />
+        </div>
+
+        <div class="field">
+          <label class="mono" for="cf-email">{fields.email.label}</label>
+          <input
+            id="cf-email"
+            name="email"
+            type="email"
+            required
+            maxlength="254"
+            autocomplete={fields.email.autocomplete}
+          />
+        </div>
+
+        <div class="field">
+          <label class="mono" for="cf-message">{fields.message.label}</label>
+          <textarea
+            id="cf-message"
+            name="message"
+            rows="5"
+            required
+            minlength="10"
+            maxlength="4000"
+            aria-describedby="cf-message-hint"></textarea>
+          <p class="field__hint" id="cf-message-hint">{fields.message.hint}</p>
+        </div>
+
+        {/*
+          Honeypot. Off-screen rather than display:none, which some bots skip,
+          and hidden from assistive technology so no human is ever asked for it.
+        */}
+        <div class="honeypot" aria-hidden="true">
+          <label for="cf-company-url">Company URL</label>
+          <input
+            id="cf-company-url"
+            name="company_url"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </div>
+
+        {
+          turnstileSiteKey && (
+            <div
+              class="cf-turnstile"
+              data-sitekey={turnstileSiteKey}
+              data-theme="dark"
+            />
+          )
+        }
+
+        <div class="form__actions">
+          <button class="btn btn--primary" type="submit" id="cf-submit">
+            {form.submit}
+          </button>
+        </div>
+
+        <p class="form__error" id="cf-error" role="alert" hidden></p>
+        <p class="form__privacy">{form.privacy}</p>
+
+        <noscript>
+          <p class="form__privacy">
+            This form needs JavaScript to send. Without it, email
+            <a class="link" href={`mailto:${company.email}`}>{company.email}</a>
+            directly.
+          </p>
+        </noscript>
+      </form>
+
+      <div class="sent" id="cf-sent" role="status" tabindex="-1" hidden>
+        <h3 class="sent__heading">{form.success.heading}</h3>
+        <p>{form.success.body}</p>
+      </div>
+    </div>
   </div>
 </section>
+
+{turnstileSiteKey && (
+  <script
+    is:inline
+    async
+    defer
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  />
+)}
+
+<script>
+  /*
+   * Progressive enhancement over a real <form>. Native validation does the
+   * client-side checking (required, type=email, minlength), so this only
+   * handles transport and the resulting state.
+   *
+   * The copy rides on data-copy rather than define:vars so this script stays
+   * bundled and type-checked; src/data/site.ts remains the only place wording
+   * is authored.
+   */
+  interface Copy {
+    errors: Record<string, string>;
+    submitting: string;
+  }
+
+  const form = document.querySelector<HTMLFormElement>('#contact-form');
+  const sent = document.querySelector<HTMLElement>('#cf-sent');
+  const error = document.querySelector<HTMLElement>('#cf-error');
+  const button = document.querySelector<HTMLButtonElement>('#cf-submit');
+
+  if (form && sent && error && button) {
+    const copy: Copy = JSON.parse(form.dataset.copy ?? '{}');
+    const idle = button.textContent;
+
+    const fail = (code?: string) => {
+      error.textContent =
+        copy.errors[code ?? ''] ?? copy.errors.send_failed ?? '';
+      error.hidden = false;
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      error.hidden = true;
+      button.disabled = true;
+      button.textContent = copy.submitting;
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { accept: 'application/json' },
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.ok) {
+          form.hidden = true;
+          sent.hidden = false;
+          // Hiding the form shortens the document under the viewport, so the
+          // confirmation has to be scrolled to explicitly — focus() alone lands
+          // the visitor back at the top of the page having seen nothing.
+          sent.scrollIntoView({ block: 'center' });
+          sent.focus({ preventScroll: true });
+          return;
+        }
+        fail(data.error);
+      } catch {
+        fail('send_failed');
+      } finally {
+        button.disabled = false;
+        button.textContent = idle;
+      }
+    });
+  }
+</script>
 
 <style>
   .contact-section {
     border-top: 1px solid var(--line);
   }
 
-  /* A single column at a reading measure. The section asks for one action, so
-     it is laid out as one column rather than split into a form beside it. */
+  /* Asymmetric split, matching About: the ask holds the left rail and the form
+     sits beside it, rather than a centred block with a form bolted underneath. */
   .contact {
-    max-width: 46rem;
+    display: grid;
+    gap: var(--s-7);
+    align-items: start;
   }
 
-  .contact h2 {
+  .contact__intro h2 {
     max-width: 14ch;
   }
 
-  .contact .lede {
+  .contact__intro .lede {
     margin-top: var(--s-4);
   }
 
-  .contact__cta {
+  .contact__fallback {
     margin-top: var(--s-6);
+    display: grid;
+    /* Start-aligned: .link draws its underline across the whole box, so a
+       stretched grid item would underline the empty space beside the address. */
+    justify-items: start;
+    gap: var(--s-2);
+    font-size: var(--t-sm);
   }
 
   .contact__note {
@@ -48,5 +229,108 @@ import { contact, company } from '../data/site';
     border-top: 1px solid var(--line);
     font-size: var(--t-sm);
     color: var(--ink-muted);
+  }
+
+  /* ---- form ---------------------------------------------------------- */
+
+  .form {
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .field {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    min-height: 2.75rem;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--field-line);
+    border-radius: var(--r-sm);
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .field textarea {
+    min-height: 9rem;
+    line-height: var(--lh-body);
+    resize: vertical;
+  }
+
+  .field input:hover,
+  .field textarea:hover {
+    border-color: var(--ink-faint);
+  }
+
+  .field__hint {
+    font-size: var(--t-sm);
+    color: var(--ink-muted);
+  }
+
+  /* Off-screen rather than display:none: some bots skip hidden fields, and the
+     point is that a bot fills this one in. */
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-4);
+    align-items: center;
+  }
+
+  .btn[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .form__error {
+    color: var(--danger);
+    font-size: var(--t-sm);
+  }
+
+  .form__privacy {
+    font-size: var(--t-sm);
+    color: var(--ink-muted);
+    max-width: 44ch;
+  }
+
+  /* Replaces the form on success. A block on the raised surface, no side stripe
+     and no icon: the heading says what happened. */
+  .sent {
+    padding: var(--s-6);
+    background: var(--surface);
+    border-radius: var(--r-md);
+  }
+
+  .sent__heading {
+    color: var(--ok);
+  }
+
+  .sent p {
+    margin-top: var(--s-3);
+    color: var(--ink-muted);
+    max-width: var(--measure);
+  }
+
+  .sent:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  @media (min-width: 54rem) {
+    .contact {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--s-8);
+    }
   }
 </style>

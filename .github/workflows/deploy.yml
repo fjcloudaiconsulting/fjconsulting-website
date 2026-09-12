@@ -75,6 +75,11 @@ jobs:
         env:
           SITE_URL: ${{ inputs.site_url }}
           SITE_INDEXABLE: ${{ inputs.indexable }}
+          # Public by design — it is rendered into the page — so it is a
+          # repository variable, not a secret. Unset is a supported state: the
+          # form then ships with the honeypot alone and the endpoint does not
+          # enforce a challenge.
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
         run: npm run build
 
       - name: Verify built output
@@ -188,13 +193,28 @@ jobs:
 
           # A 200 only proves something answered. Assert it is actually this site
           # and not an error page or a placeholder.
-          for needle in "Cloud, Kubernetes and AI infrastructure" "info@fjconsulting.io"; do
+          for needle in "Cloud, Kubernetes and AI infrastructure" "info@fjconsulting.io" 'action="/api/contact"'; do
             if ! grep -qF "$needle" /tmp/body.html; then
               echo "::error::Deployed page is missing expected content: $needle"
               exit 1
             fi
           done
 
+          # The Pages Function is deployed separately from dist/ and a routing
+          # mistake is silent: the page still loads, the form just 404s on
+          # submit. An empty POST cannot produce an email, so this is safe to
+          # run on every deploy — it only proves the route exists and rejects.
+          endpoint="${target%/}/api/contact"
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
+            -X POST "${endpoint}")
+
+          if [ "$status" != "400" ]; then
+            echo "::error::${endpoint} answered HTTP ${status}, expected 400."
+            echo "404 or 405 means the Pages Function did not deploy."
+            exit 1
+          fi
+
+          echo "Contact endpoint routed and rejecting empty posts."
           echo "Deployment healthy: ${target}"
 
       - name: Summary
