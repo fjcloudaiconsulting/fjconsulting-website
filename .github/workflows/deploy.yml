@@ -156,31 +156,38 @@ jobs:
             --branch=main
             --commit-dirty=true
 
-      # Deploying is not the same as working. Fetch the deployment that was just
-      # published and assert it actually serves the site.
+      # Deploying is not the same as working. Fetch the deployment that was
+      # just published and assert it actually serves the site.
+      #
+      # On the first deploy of a new project Cloudflare is still provisioning
+      # the *.pages.dev certificate, and losing that race surfaces as a TLS
+      # handshake failure rather than an HTTP error:
+      #
+      #   curl: (35) OpenSSL/3.0.13: error:0A000410:SSL routines::sslv3 alert
+      #         handshake failure
+      #
+      # curl does the waiting itself: --retry-all-errors retries connection and
+      # TLS failures as well as HTTP ones, so the window is a few flags rather
+      # than a hand-rolled loop. Twenty attempts, 15s apart, capped at five
+      # minutes total.
       - name: Smoke-test the deployment
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
-          SITE_URL: ${{ inputs.site_url }}
+          PROJECT_NAME: ${{ inputs.project_name }}
         run: |
-          set -euo pipefail
-          target="${DEPLOY_URL:-$SITE_URL}"
-          echo "Smoke-testing $target"
+          set -uo pipefail
+          target="${DEPLOY_URL:-https://${PROJECT_NAME}.pages.dev}"
+          echo "Smoke-testing ${target}"
 
-          for attempt in 1 2 3 4 5; do
-            code=$(curl -sS -o /tmp/body.html -w '%{http_code}' --max-time 20 "$target" || echo 000)
-            if [ "$code" = "200" ]; then
-              break
-            fi
-            echo "attempt $attempt: HTTP $code, retrying in 5s"
-            sleep 5
-          done
-
-          if [ "$code" != "200" ]; then
-            echo "::error::Deployment did not return HTTP 200 (got $code)"
+          if ! curl -sS --fail \
+            --retry 20 --retry-delay 15 --retry-all-errors --retry-max-time 300 \
+            --max-time 20 -o /tmp/body.html "${target}"; then
+            echo "::error::${target} did not serve HTTP 200 within five minutes."
             exit 1
           fi
 
+          # A 200 only proves something answered. Assert it is actually this site
+          # and not an error page or a placeholder.
           for needle in "Cloud, Kubernetes and AI infrastructure" "info@fjconsulting.io"; do
             if ! grep -qF "$needle" /tmp/body.html; then
               echo "::error::Deployed page is missing expected content: $needle"
@@ -188,7 +195,7 @@ jobs:
             fi
           done
 
-          echo "Deployment healthy: $target"
+          echo "Deployment healthy: ${target}"
 
       - name: Summary
         env:
