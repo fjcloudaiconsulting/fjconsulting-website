@@ -5,6 +5,34 @@ _Last updated: 2026-09-12_
 Single source of truth for **where we left off**. Update it at the end of each
 working session.
 
+## Pick up here — next session
+
+_Session closed 2026-09-12. Two PRs open, both waiting on the owner, nothing
+half-finished on disk._
+
+**Start with the one decision that unblocks the most work: section A of
+[Blocked on the owner](#blocked-on-the-owner) — the Mailgun sending domain.**
+Everything else in Phase 3 queues behind it except the Turnstile widget (C),
+which is independent and can be done first for a quick win.
+
+| Open | What | Waiting on |
+| --- | --- | --- |
+| [#13](https://github.com/fjcloudaiconsulting/fjconsulting-website/pull/13) | Phase 3 contact form + Pages Function. **Draft.** CI green | Owner's approval of the form's *look* — a new form is a design change. Approve it and it goes ready-for-review, then merge |
+| [#12](https://github.com/fjcloudaiconsulting/fjconsulting-website/pull/12) | CLAUDE.md documentation refresh. Docs only, CI green | Merge whenever |
+
+After #13 merges the form is live but still answers `503 not_configured`. That
+is expected: it stays dormant until blocks B, C and D below are done **and the
+deploy is re-run**, because Cloudflare Pages applies variables to new
+deployments only.
+
+No code is owed on Phase 3. What remains is credentials, one DNS change, and
+the About copy (block E), which needs no accounts at all and is the largest
+credibility win still available.
+
+Housekeeping, whenever convenient: `infra/modules/` is 489 MB of Terraform
+provider binaries left behind by the `pages-app` module deleted on 2026-09-11.
+Untracked and safe to delete.
+
 ## Current status
 
 - ✅ Requirements, design spec, repo rules and conventions on `main` (PRs #1, #2 merged).
