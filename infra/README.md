@@ -28,7 +28,7 @@ project without a TTY), and Terraform attaches domains to it.
 
 | Environment | Zone | Pages project | Hostnames |
 | --- | --- | --- | --- |
-| dev | `fjconsulting.dev` | `fjconsulting-website-dev` | `fjconsulting.dev`, `dev.fjconsulting.dev` |
+| dev | `fjconsulting.dev` | `fjconsulting-website-dev` | `fjconsulting.dev` |
 
 Only the `.dev` estate is managed here. `fjconsulting.io` still hosts unrelated
 production services and has not been moved to Cloudflare; it gets its own

@@ -18,7 +18,7 @@ variable "dev_project_name" {
 variable "dev_hostnames" {
   description = "Hostnames bound to the dev Pages project. Apex is supported: Cloudflare flattens the CNAME."
   type        = list(string)
-  default     = ["fjconsulting.dev", "dev.fjconsulting.dev"]
+  default     = ["fjconsulting.dev"]
 
   validation {
     condition     = length(var.dev_hostnames) > 0
