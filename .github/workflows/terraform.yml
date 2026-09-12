@@ -48,8 +48,3 @@ jobs:
 
       - name: Validate
         run: terraform -chdir=infra validate
-
-      - name: Validate module in isolation
-        run: |
-          terraform -chdir=infra/modules/pages-app init -backend=false -input=false
-          terraform -chdir=infra/modules/pages-app validate

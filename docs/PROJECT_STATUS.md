@@ -14,8 +14,8 @@ working session.
   asserted in CI.
 - ✅ **CI/CD built.** Reusable deploy workflow, dev on merge to `main`,
   production on SemVer tag.
-- ✅ **Phase 2 IaC written.** Terraform Cloud config plus a reusable
-  `pages-app` module, validated against Cloudflare provider 5.22.
+- ✅ **Phase 2 IaC written.** Terraform Cloud config for the `.dev` estate,
+  validated against Cloudflare provider 5.22.
 - ⏳ **Not yet deployed.** Blocked only on repository secrets (see below).
 - ⏳ Phase 3 (contact delivery via Mailgun + Turnstile) not started.
 
@@ -90,7 +90,8 @@ commit is the unit promoted, and the tag records exactly which one.
 
 `fjconsulting.dev` is the shared non-production estate. Onboarding a new app is:
 
-1. Add a `modules/pages-app` block in `infra/main.tf` with its hostname.
+1. Copy the `cloudflare_pages_domain` / `cloudflare_dns_record` pair in
+   `infra/main.tf` for its hostname.
 2. Copy `.github/workflows/deploy-dev.yml`, change the three inputs.
 3. First CI run creates the Pages project; Terraform attaches the domain.
 
@@ -138,7 +139,7 @@ commit is the unit promoted, and the tag records exactly which one.
 | --- | --- |
 | Generator | Astro 7, static output, **no** CF adapter / SSR |
 | Hosting | Cloudflare Pages, two projects (dev + prod) |
-| IaC | Terraform Cloud, VCS-driven, reusable `pages-app` module |
+| IaC | Terraform Cloud, VCS-driven |
 | CI/CD | GitHub Actions, reusable `deploy.yml` called per environment |
 | Promotion | main → dev automatically; SemVer tag → prod |
 | Domains | `.dev` = shared non-prod estate (apex + `dev.`, no `www`), `.io` = production |

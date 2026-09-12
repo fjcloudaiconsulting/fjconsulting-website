@@ -29,33 +29,22 @@ project without a TTY), and Terraform attaches domains to it.
 | Environment | Zone | Pages project | Hostnames |
 | --- | --- | --- | --- |
 | dev | `fjconsulting.dev` | `fjconsulting-website-dev` | `fjconsulting.dev`, `dev.fjconsulting.dev` |
-| prod | `fjconsulting.io` | `fjconsulting-website-prod` | `fjconsulting.io`, `www.fjconsulting.io` |
 
-Production is gated behind `enable_prod`, which defaults to `false`. The `.io`
-domain still hosts unrelated production services and has not been moved to
-Cloudflare. Nothing here touches it until that flag is deliberately flipped.
+Only the `.dev` estate is managed here. `fjconsulting.io` still hosts unrelated
+production services and has not been moved to Cloudflare; it gets its own
+resources when it does, written against the zone that exists at that point.
 
-## The reusable module
+## Onboarding another app
 
-`modules/pages-app/` binds a set of hostnames to an existing Pages project and
-creates the proxied CNAME records. It is the unit every future app under
-`fjconsulting.dev` should use:
+Two resources bind a set of hostnames to an existing Pages project: a
+`cloudflare_pages_domain` for each hostname and a proxied `cloudflare_dns_record`
+pointing at `<project>.pages.dev`. Copy that pair, change the project name and
+hostnames, copy `.github/workflows/deploy-dev.yml` with new inputs, and let the
+first CI run create the Pages project.
 
-```hcl
-module "some_new_app" {
-  source = "./modules/pages-app"
-
-  account_id   = var.account_id
-  zone_id      = data.cloudflare_zone.dev.zone_id
-  project_name = "some-new-app-dev"
-  hostnames    = ["someapp.fjconsulting.dev"]
-  environment  = "dev"
-}
-```
-
-Onboarding a new app is then: add the module block here, copy
-`.github/workflows/deploy-dev.yml` with new inputs, and let the first CI run
-create the Pages project.
+If a third app arrives and the pair has genuinely been copied twice, that is the
+point to extract a module — with three real call sites to shape it, rather than
+one and a guess.
 
 ## First run
 
